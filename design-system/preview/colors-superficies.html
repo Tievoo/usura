@@ -1,0 +1,52 @@
+<!-- @dsCard group="Colors" -->
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Superficies y texto</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:24px; background:var(--bg); font-family:var(--font-ui); }
+  h3 { font:var(--w-semi) 12px/1 var(--font-ui); letter-spacing:.14em; text-transform:uppercase;
+       color:var(--text-3); margin:0 0 12px; }
+  h3 + h3, .grid + h3 { margin-top:28px; }
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .sw { display:flex; flex-direction:column; gap:6px; }
+  .chip { height:64px; border-radius:var(--r-md); border:1px solid var(--rule); }
+  .n { font:var(--w-semi) 11.5px/1.2 var(--font-ui); color:var(--text); }
+  .h { font:11px/1 var(--font-figure); color:var(--text-3); }
+  .stack { background:var(--bg); border:1px solid var(--rule); border-radius:var(--r-md); padding:14px; display:grid; gap:8px; }
+  .stack > div { padding:11px 13px; border-radius:var(--r-sm); font:12.5px/1 var(--font-ui); color:var(--text-2); }
+  .txt { display:grid; gap:9px; }
+  .txt p { margin:0; font-family:var(--font-ui); font-size:14px; }
+</style></head>
+<body>
+
+  <h3>Superficies — elevación por luminosidad, no por sombra</h3>
+  <div class="grid">
+    <div class="sw"><div class="chip" style="background:var(--bg)"></div><div class="n">bg</div><div class="h">#141210</div></div>
+    <div class="sw"><div class="chip" style="background:var(--surface)"></div><div class="n">surface</div><div class="h">#1D1A17</div></div>
+    <div class="sw"><div class="chip" style="background:var(--surface-2)"></div><div class="n">surface-2</div><div class="h">#241F1B</div></div>
+    <div class="sw"><div class="chip" style="background:var(--surface-3)"></div><div class="n">surface-3</div><div class="h">#2B251F</div></div>
+  </div>
+
+  <h3>Apilado real</h3>
+  <div class="stack">
+    <div style="background:var(--surface)">surface — barra de pestañas, tarjetas</div>
+    <div style="background:var(--surface-2)">surface-2 — controles, fila seleccionada</div>
+    <div style="background:var(--surface-3)">surface-3 — sheet de alta de gasto</div>
+  </div>
+
+  <h3>Líneas y texto</h3>
+  <div class="grid">
+    <div class="sw"><div class="chip" style="background:var(--rule)"></div><div class="n">rule</div><div class="h">#2E2924</div></div>
+    <div class="sw"><div class="chip" style="background:var(--rule-strong)"></div><div class="n">rule-strong</div><div class="h">#423A32</div></div>
+    <div class="sw"><div class="chip" style="background:var(--text-3)"></div><div class="n">text-3</div><div class="h">#8B8177</div></div>
+    <div class="sw"><div class="chip" style="background:var(--text)"></div><div class="n">text</div><div class="h">#EDE7DE</div></div>
+  </div>
+
+  <h3>Jerarquía de texto</h3>
+  <div class="txt">
+    <p style="color:var(--text)">text — el movimiento, el monto, lo que vinís a leer</p>
+    <p style="color:var(--text-2)">text-2 — descripciones, texto secundario de una ficha</p>
+    <p style="color:var(--text-3)">text-3 — categoría, medio de pago, fecha, etiquetas micro</p>
+  </div>
+
+</body></html>

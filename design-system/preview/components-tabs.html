@@ -1,0 +1,77 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Barra de pestañas y FAB</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:24px; background:var(--bg); font-family:var(--font-ui); }
+  h3 { font:var(--w-semi) 12px/1 var(--font-ui); letter-spacing:.14em; text-transform:uppercase;
+       color:var(--text-3); margin:0 0 6px; }
+  .cap { font:11.5px/1.5 var(--font-ui); color:var(--text-3); margin:0 0 16px; max-width:56ch; }
+  .demo { position:relative; max-width:360px; height:150px; background:var(--bg);
+          border:1px solid var(--rule); border-radius:var(--r-md); overflow:hidden;
+          display:flex; flex-direction:column; justify-content:flex-end; }
+  .filler { flex:1; display:flex; align-items:flex-end; padding:0 var(--pad-screen) 12px;
+            font:11.5px/1.4 var(--font-ui); color:var(--text-3); }
+
+  .tabs { display:flex; background:var(--surface); border-top:1px solid var(--rule); height:var(--h-tabbar); }
+  .tabs button { flex:1; background:none; border:0; cursor:pointer; padding:0 2px;
+                 font:9.5px/1.3 var(--font-ui); letter-spacing:.06em; color:var(--text-3);
+                 border-top:2px solid transparent; margin-top:-1px;
+                 display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+                 transition:color var(--dur-fast) var(--ease); }
+  .tabs button:hover { color:var(--text-2); }
+  .tabs button[aria-current] { color:var(--amber); border-top-color:var(--amber); }
+  .tabs svg { width:19px; height:19px; stroke:currentColor; fill:none; stroke-width:1.6; }
+
+  .fab { position:absolute; right:15px; bottom:calc(var(--h-tabbar) + 14px);
+         width:var(--h-fab); height:var(--h-fab); border-radius:50%; border:0; cursor:pointer;
+         background:var(--amber); color:var(--amber-ink); box-shadow:var(--sh-fab);
+         font:600 25px/1 var(--font-ui); transition:filter var(--dur-fast) var(--ease); }
+  .fab:hover { filter:brightness(1.08); }
+  .fab:active { background:var(--amber-press); }
+
+  .list { max-width:360px; margin:16px 0 0; display:grid; gap:7px; }
+  .list div { display:grid; grid-template-columns:104px minmax(0,1fr); gap:12px;
+              font:11.5px/1.45 var(--font-ui); color:var(--text-3); }
+  .list b { color:var(--text-2); font-weight:500; }
+</style></head>
+<body>
+  <h3>Barra de pestañas + FAB</h3>
+  <p class="cap">
+    Cuatro pestañas fijas. Las que todavía no existen no se esconden: muestran un estado vacío
+    honesto, así la estructura de la app no cambia entre iteraciones.
+  </p>
+
+  <div class="demo">
+    <div class="filler">La lista pasa por debajo del FAB: el último movimiento nunca queda tapado, la lista lleva 68px de padding al final.</div>
+
+    <button type="button" class="fab" aria-label="Cargar gasto">+</button>
+
+    <nav class="tabs">
+      <button type="button" aria-current="page">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        Movimientos
+      </button>
+      <button type="button">
+        <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Análisis
+      </button>
+      <button type="button">
+        <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 3v4h-4"/></svg>
+        Recurrentes
+      </button>
+      <button type="button">
+        <svg viewBox="0 0 24 24"><path d="M3 7h18v11H3zM3 11h18M7 15h4"/></svg>
+        Deudas
+      </button>
+    </nav>
+  </div>
+
+  <div class="list">
+    <div><b>Pestaña activa</b><span>ámbar en icono, label y regla superior de 2px. Es el único lugar donde el acento aparece fuera de montos y acción primaria.</span></div>
+    <div><b>FAB</b><span>52px, ámbar macizo, flota sobre la lista. Es la acción primaria de la app y no comparte protagonismo con nada.</span></div>
+    <div><b>Iconos</b><span>Phosphor regular, 19px en la barra. Heredan currentColor.</span></div>
+    <div><b>Label siempre</b><span>sin labels, cuatro iconos abstractos obligan a adivinar. El texto de 9,5px alcanza.</span></div>
+  </div>
+
+</body></html>

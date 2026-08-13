@@ -1,0 +1,262 @@
+/* ============================================================
+   Usura Design System — tokens
+   Dirección: «Instrumento» — panel de medición, ámbar sobre carbón cálido.
+   Tema por defecto: OSCURO. El claro es una contraparte, no el punto de partida.
+   ============================================================ */
+
+:root {
+  /* ---------- tipografía ----------
+     La app sirve IBM Plex (OFL, autohospedada vía @fontsource).
+     Los fallbacks existen para que los previews rendericen parecido en Windows. */
+  --font-readout: "IBM Plex Sans Condensed", "Bahnschrift SemiCondensed", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --font-ui:      "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-figure:  "IBM Plex Mono", Consolas, "Cascadia Mono", ui-monospace, monospace;
+
+  /* escala tipográfica (mobile-first, px) */
+  --t-readout-xl: 34px;  /* monto en el alta de gasto */
+  --t-readout-l:  30px;  /* total del mes */
+  --t-readout-m:  20px;  /* subtotales grandes, saldos */
+  --t-h1:         20px;
+  --t-h2:         16px;
+  --t-body:       14px;
+  --t-body-s:     12.5px; /* fila de movimiento — el tamaño más usado de la app */
+  --t-label:      11px;
+  --t-micro:      9px;   /* versalitas con tracking */
+  --t-figure:     12.5px;
+  --t-figure-s:   11px;
+
+  --lh-readout: 1;
+  --lh-tight:   1.25;
+  --lh-body:    1.45;
+
+  --tr-micro:  .18em;  /* versalitas: GASTADO EN JULIO */
+  --tr-label:  .06em;
+  --tr-readout: -.015em;
+
+  --w-regular: 400;
+  --w-medium:  500;
+  --w-semi:    600;
+
+  /* ---------- espaciado (grilla de 4) ---------- */
+  --s-1:  2px;  --s-2:  4px;  --s-3:  6px;  --s-4:  8px;
+  --s-5: 12px;  --s-6: 16px;  --s-7: 20px;  --s-8: 24px;
+  --s-9: 32px;  --s-10: 40px; --s-11: 48px;
+
+  /* márgenes de pantalla */
+  --pad-screen: 16px;
+  --pad-row-y:  8px;
+
+  /* ---------- radios ----------
+     Instrumento = casi rectos. Nada de rounded-lg por todos lados. */
+  --r-xs:   2px;
+  --r-sm:   3px;   /* botones chicos, controles de mes */
+  --r-md:   6px;   /* tarjetas, sheets */
+  --r-lg:  10px;
+  --r-pill: 999px; /* chips de etiqueta */
+
+  /* ---------- alturas de toque ----------
+     44px es el mínimo real para el pulgar. La fila de movimiento lo respeta. */
+  --touch-min: 44px;
+  --h-row:     46px;
+  --h-control: 40px;
+  --h-fab:     52px;
+  --h-tabbar:  54px;
+
+  /* ---------- movimiento ---------- */
+  --ease: cubic-bezier(.2, 0, .3, 1);
+  --dur-fast: 120ms;
+  --dur:      180ms;
+  --dur-sheet: 240ms;
+
+  /* ============ COLOR: tema oscuro (por defecto) ============ */
+
+  /* superficies — carbón cálido, sesgo marrón, nunca negro azulado */
+  --bg:         #141210;
+  --surface:    #1D1A17;
+  --surface-2:  #241F1B;
+  --surface-3:  #2B251F;  /* sheet elevado */
+  --scrim:      rgba(10, 8, 6, .68);
+
+  /* líneas */
+  --rule:        #2E2924;
+  --rule-strong: #423A32;
+
+  /* texto */
+  --text:    #EDE7DE;
+  --text-2:  #B8AEA3;
+  --text-3:  #8B8177;  /* etiquetas, metadatos, estados apagados */
+
+  /* acento — ámbar. Es el único acento: montos de gasto y acción primaria. */
+  --amber:       #DDA544;
+  --amber-hover: #E9B45B;
+  --amber-press: #C08F33;
+  --amber-ink:   #1B1509;  /* texto sobre ámbar */
+  --amber-soft:  #2A2116;  /* fondo teñido para filas activas */
+
+  /* semánticos — separados del acento, nunca decorativos */
+  --positive:     #5FA391;  /* ingreso, te deben, ahorro */
+  --positive-ink: #08201A;
+  --negative:     #C25B4A;  /* error, borrar, le debés */
+  --negative-ink: #FBEDEA;
+  --info-soft:    #22201C;  /* fondo de avisos neutros */
+
+  /* estado del dato */
+  --estimado: var(--text-3);   /* cotización de fin de semana, recurrente no confirmado */
+  --pendiente: #8E7B57;        /* movimiento cargado offline, sin sincronizar */
+
+  /* sombras — en oscuro casi no se usan; la elevación es lightness de superficie */
+  --sh-fab:   0 6px 18px -4px rgba(0, 0, 0, .55);
+  --sh-sheet: 0 -8px 32px -8px rgba(0, 0, 0, .6);
+
+  /* ============ COLOR: categorías ============
+     17 categorías de gasto. Hues separados y saturación moderada para que no
+     vibren sobre el carbón. Las subcategorías heredan el hue del padre y varían
+     en luminosidad; no tienen color propio. */
+  --cat-comida:       #E0864A;
+  --cat-super:        #C9A227;
+  --cat-bebidas:      #93B84C;
+  --cat-transporte:   #5A93D6;
+  --cat-apuestas:     #B85C8A;
+  --cat-entretenim:   #A97BD6;
+  --cat-deporte:      #4FA97C;
+  --cat-salud:        #4FB3B3;
+  --cat-suscrip:      #7B8BD6;
+  --cat-tecnologia:   #8A9AA6;
+  --cat-cuidado:      #D69AAE;
+  --cat-ropa:         #D6B36A;
+  --cat-regalos:      #D2685C;
+  --cat-hogar:        #6E9E8E;
+  --cat-impuestos:    #9A8878;
+  --cat-viajes:       #57A9C4;
+  --cat-otros:        #7A7169;
+
+  /* categorías de ingreso — todas en la familia del positivo, distinguidas por luminosidad */
+  --inc-trabajo:      #6FB8A2;
+  --inc-usd:          #57A48C;
+  --inc-apuestas:     #85C0A8;
+  --inc-inversiones:  #4C8F7B;
+  --inc-reintegros:   #9BCBB8;
+  --inc-otros:        #6E8E82;
+}
+
+/* ============ COLOR: tema claro ============
+   Existe por un motivo concreto: al sol, el carbón pelea con el reflejo justo
+   cuando estás cargando un gasto en la calle. Mismo sistema, no un invento nuevo:
+   el papel es cálido y el ámbar baja de luminosidad para que se pueda leer. */
+:root[data-theme="light"] {
+  --bg:         #F6F3EE;
+  --surface:    #FFFDF9;
+  --surface-2:  #F0EBE3;
+  --surface-3:  #FFFFFF;
+  --scrim:      rgba(28, 23, 18, .38);
+
+  --rule:        #E2DBD0;
+  --rule-strong: #C9BFB1;
+
+  --text:    #1C1815;
+  --text-2:  #4E463D;
+  --text-3:  #6F665B;
+
+  --amber:       #8A5B12;  /* legible como texto sobre papel */
+  --amber-hover: #744C0D;
+  --amber-press: #5E3D09;
+  --amber-ink:   #FFF8EA;
+  --amber-soft:  #F6EAD3;
+
+  --positive:     #1F6B57;
+  --positive-ink: #EAF5F1;
+  --negative:     #9E3524;
+  --negative-ink: #FDEEEB;
+  --info-soft:    #EFEAE1;
+
+  --pendiente: #8A6E3A;
+
+  --sh-fab:   0 4px 14px -3px rgba(60, 45, 25, .28);
+  --sh-sheet: 0 -8px 28px -8px rgba(60, 45, 25, .22);
+
+  /* categorías: mismos hues, oscurecidos para contraste sobre papel */
+  --cat-comida:       #B45A22;
+  --cat-super:        #8A6B0F;
+  --cat-bebidas:      #5A7A22;
+  --cat-transporte:   #2C5F9E;
+  --cat-apuestas:     #8A3560;
+  --cat-entretenim:   #74459E;
+  --cat-deporte:      #24704B;
+  --cat-salud:        #1F7373;
+  --cat-suscrip:      #47559E;
+  --cat-tecnologia:   #55646E;
+  --cat-cuidado:      #9E5871;
+  --cat-ropa:         #8A6B22;
+  --cat-regalos:      #9E3A2C;
+  --cat-hogar:        #3A6B5C;
+  --cat-impuestos:    #6B5A47;
+  --cat-viajes:       #26738A;
+  --cat-otros:        #5C554D;
+
+  --inc-trabajo:      #2C7A63;
+  --inc-usd:          #1F6B57;
+  --inc-apuestas:     #3A8A70;
+  --inc-inversiones:  #175646;
+  --inc-reintegros:   #4C9E85;
+  --inc-otros:        #47615A;
+}
+
+/* ============================================================
+   Clases semánticas — el vocabulario que usan los componentes.
+   ============================================================ */
+
+.u-readout-l {
+  font-family: var(--font-readout);
+  font-weight: var(--w-semi);
+  font-size: var(--t-readout-l);
+  line-height: var(--lh-readout);
+  letter-spacing: var(--tr-readout);
+  font-variant-numeric: tabular-nums;
+}
+.u-readout-xl {
+  font-family: var(--font-readout);
+  font-weight: var(--w-semi);
+  font-size: var(--t-readout-xl);
+  line-height: var(--lh-readout);
+  letter-spacing: var(--tr-readout);
+  font-variant-numeric: tabular-nums;
+}
+.u-micro {
+  font-family: var(--font-ui);
+  font-size: var(--t-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--tr-micro);
+  color: var(--text-3);
+}
+.u-label {
+  font-family: var(--font-ui);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  color: var(--text-3);
+}
+.u-body   { font-family: var(--font-ui); font-size: var(--t-body);   line-height: var(--lh-body); color: var(--text); }
+.u-body-s { font-family: var(--font-ui); font-size: var(--t-body-s); line-height: var(--lh-tight); color: var(--text); }
+
+/* Toda cifra de dinero pasa por acá: mono + tabular, siempre.
+   Es lo que hace que las columnas de montos se alineen de verdad. */
+.u-figure {
+  font-family: var(--font-figure);
+  font-size: var(--t-figure);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.u-figure-s { font-family: var(--font-figure); font-size: var(--t-figure-s); font-variant-numeric: tabular-nums; }
+
+.u-gasto    { color: var(--amber); }
+.u-ingreso  { color: var(--positive); }
+.u-estimado { color: var(--estimado); border-bottom: 1px dashed currentColor; }
+
+/* foco visible: obligatorio, ámbar, sin excepciones */
+:where(button, a, input, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+}

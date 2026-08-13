@@ -1,0 +1,61 @@
+<!-- @dsCard group="Type" -->
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Cifras tabulares</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:24px; background:var(--bg); font-family:var(--font-ui); }
+  h3 { font:var(--w-semi) 12px/1 var(--font-ui); letter-spacing:.14em; text-transform:uppercase;
+       color:var(--text-3); margin:0 0 14px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .col { background:var(--surface); border:1px solid var(--rule); border-radius:var(--r-md); padding:14px 16px; }
+  .col > h4 { margin:0 0 10px; font:var(--w-semi) 11.5px/1.3 var(--font-ui); color:var(--text-2); }
+  .col > h4 span { display:block; font-weight:400; font-size:10.5px; color:var(--text-3); }
+  .bad  { text-align:right; font-family:var(--font-ui); font-size:13px; font-variant-numeric:proportional-nums;
+          color:var(--text-2); display:grid; gap:6px; }
+  .good { text-align:right; font-family:var(--font-figure); font-size:13px; font-variant-numeric:tabular-nums;
+          color:var(--amber); display:grid; gap:6px; }
+  .note { margin:20px 0 0; padding:12px 14px; background:var(--info-soft); border-left:2px solid var(--amber);
+          font:13px/1.55 var(--font-ui); color:var(--text-2); }
+  .fmt { margin-top:24px; display:grid; gap:0; }
+  .fmt > div { display:grid; grid-template-columns:150px minmax(0,1fr); gap:18px; padding:11px 0;
+               border-top:1px solid var(--rule); font-size:13px; color:var(--text-2); align-items:baseline; }
+  .fmt .k { font:11px/1.3 var(--font-figure); color:var(--text-3); }
+  .fmt b { color:var(--text); font-weight:600; font-family:var(--font-figure); }
+</style></head>
+<body>
+  <h3>Por qué toda cifra va en mono tabular</h3>
+
+  <div class="pair">
+    <div class="col">
+      <h4>Sans proporcional <span>los dígitos tienen ancho distinto: la columna baila</span></h4>
+      <div class="bad">
+        <div>28.457</div><div>4.500</div><div>11.000</div>
+        <div>5.700</div><div>14.700</div><div>1.246.224</div>
+      </div>
+    </div>
+    <div class="col">
+      <h4>Plex Mono tabular <span>todos los dígitos miden igual: se lee de un barrido</span></h4>
+      <div class="good">
+        <div>28.457</div><div>4.500</div><div>11.000</div>
+        <div>5.700</div><div>14.700</div><div>1.246.224</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">
+    La diferencia se nota recién con seis renglones, y esta app va a tener listas de cincuenta.
+    Es la razón por la que <b>ningún monto se escribe con la fuente de interfaz</b>, ni siquiera
+    los chicos.
+  </p>
+
+  <h3 style="margin-top:28px">Formato argentino</h3>
+  <div class="fmt">
+    <div><span class="k">pesos</span><span><b>$899.007</b> — punto de miles, sin decimales cuando son cero</span></div>
+    <div><span class="k">pesos con centavos</span><span><b>$1.192,50</b> — coma decimal</span></div>
+    <div><span class="k">dólares</span><span><b>US$ 15</b> — nunca «$15» a secas: la ambigüedad con el peso es inaceptable acá</span></div>
+    <div><span class="k">conversión</span><span><b>US$ 15 × 1.500</b> — con la cotización y su fecha visibles</span></div>
+    <div><span class="k">ingreso</span><span><b>+5.500</b> — el signo va siempre, en teal</span></div>
+    <div><span class="k">fecha corta</span><span><b>31 jul</b> — en la fila de movimiento</span></div>
+    <div><span class="k">fecha larga</span><span><b>viernes 31 de julio</b> — en el encabezado de día</span></div>
+  </div>
+</body></html>

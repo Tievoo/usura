@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Usura — prototipo Movimientos</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  html, body { height:100%; }
+  body { margin:0; background:#0A0908; font-family:var(--font-ui); color:var(--text);
+         display:flex; flex-direction:column; align-items:center; gap:14px; padding:22px 14px; }
+  :root[data-theme="light"] body { background:#E6E1D8; }
+
+  .bar { display:flex; gap:10px; align-items:center; font:11.5px/1 var(--font-ui); color:var(--text-3); }
+  .bar button { background:var(--surface-2); border:1px solid var(--rule-strong); color:var(--text-2);
+                border-radius:var(--r-sm); height:28px; padding:0 11px; cursor:pointer; font:11.5px/1 var(--font-ui); }
+  .bar button:hover { color:var(--text); }
+
+  /* ---- marco de dispositivo ---- */
+  .device { width:376px; max-width:100%; border:1px solid var(--rule-strong); border-radius:26px;
+            padding:8px; background:var(--surface); }
+  .app { height:700px; max-height:78vh; border-radius:19px; overflow:hidden; background:var(--bg);
+         display:flex; flex-direction:column; position:relative; }
+
+  /* ---- encabezado ---- */
+  .hd { display:flex; justify-content:space-between; align-items:flex-start; flex:none;
+        padding:16px var(--pad-screen) 13px; border-bottom:1px solid var(--rule); }
+  .hd .amt { display:block; margin:6px 0 5px; color:var(--text); }
+  .hd .amt small { font-size:17px; color:var(--text-3); margin-right:2px; }
+  .delta { display:flex; align-items:center; gap:7px; font:10.5px/1.3 var(--font-ui); color:var(--text-3); }
+  .track { width:40px; height:2px; background:var(--rule); position:relative; display:block; flex:none; }
+  .track i { position:absolute; top:0; bottom:0; left:0; display:block; background:var(--rule-strong); }
+  .mo { text-align:right; flex:none; }
+  .mo .m { display:block; font:var(--t-body-s)/1.2 var(--font-ui); color:var(--text); margin-bottom:6px; }
+  .mo .nav { display:flex; gap:5px; justify-content:flex-end; }
+  .mo button { width:25px; height:25px; padding:0; cursor:pointer; border-radius:var(--r-sm);
+               background:var(--surface); border:1px solid var(--rule); color:var(--text-3); font:11px/1 var(--font-ui); }
+  .mo button:hover:not(:disabled) { color:var(--text); border-color:var(--text-3); }
+  .mo button:disabled { opacity:.3; cursor:default; }
+
+  /* ---- lista ---- */
+  .feed { flex:1; overflow-y:auto; overscroll-behavior:contain; padding-bottom:78px; }
+  .dia { display:flex; justify-content:space-between; align-items:baseline; padding:13px var(--pad-screen) 5px; }
+  .dia .d { font:var(--t-micro)/1.2 var(--font-ui); text-transform:uppercase; letter-spacing:var(--tr-micro); color:var(--text-3); }
+  .dia .st { font-family:var(--font-figure); font-size:var(--t-figure-s); color:var(--text-3); font-variant-numeric:tabular-nums; }
+  .mv { display:flex; align-items:center; gap:10px; min-height:var(--h-row); padding:8px var(--pad-screen);
+        width:100%; background:none; border:0; border-top:1px solid var(--rule); text-align:left; cursor:pointer; }
+  .dia + .mv { border-top:0; }
+  .mv:hover { background:var(--surface); }
+  .mv .body { flex:1; min-width:0; }
+  .mv .nm { display:block; font:var(--t-body-s)/1.3 var(--font-ui); color:var(--text);
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mv .sub { display:block; font:var(--t-micro)/1.4 var(--font-ui); text-transform:uppercase;
+             letter-spacing:.06em; color:var(--text-3); margin-top:2px; }
+  .mv .v { flex:none; text-align:right; font-family:var(--font-figure); font-size:var(--t-figure);
+           font-variant-numeric:tabular-nums; color:var(--amber); }
+  .mv .v em { display:block; font-style:normal; font-size:9.5px; color:var(--text-3); margin-top:2px; }
+  .chip-rec { font:8.5px/1.5 var(--font-ui); letter-spacing:.08em; text-transform:uppercase;
+              color:var(--positive); border:1px solid var(--rule-strong); border-radius:var(--r-xs); padding:0 4px; }
+  .dot-p { width:5px; height:5px; border-radius:50%; background:var(--pendiente); flex:none; }
+  .vacio { padding:44px var(--pad-screen); text-align:center; font:13.5px/1.5 var(--font-ui); color:var(--text-3); }
+
+  /* ---- FAB + pestañas ---- */
+  .fab { position:absolute; right:15px; bottom:calc(var(--h-tabbar) + 14px); width:var(--h-fab); height:var(--h-fab);
+         border-radius:50%; border:0; cursor:pointer; background:var(--amber); color:var(--amber-ink);
+         box-shadow:var(--sh-fab); font:600 25px/1 var(--font-ui); z-index:3; }
+  .fab:hover { filter:brightness(1.08); }
+  .fab:active { background:var(--amber-press); }
+  .tabs { display:flex; background:var(--surface); border-top:1px solid var(--rule); height:var(--h-tabbar); flex:none; }
+  .tabs button { flex:1; background:none; border:0; cursor:pointer; padding:0 2px; font:9.5px/1.3 var(--font-ui);
+                 letter-spacing:.06em; color:var(--text-3); border-top:2px solid transparent; margin-top:-1px;
+                 display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; }
+  .tabs button[aria-current] { color:var(--amber); border-top-color:var(--amber); }
+  .tabs svg { width:19px; height:19px; stroke:currentColor; fill:none; stroke-width:1.6; }
+
+  /* ---- sheet ---- */
+  .scrim { position:absolute; inset:0; background:var(--scrim); opacity:0; pointer-events:none;
+           transition:opacity var(--dur) var(--ease); z-index:4; }
+  .scrim.on { opacity:1; pointer-events:auto; }
+  .sheet { position:absolute; left:0; right:0; bottom:0; z-index:5; background:var(--surface-3);
+           border-top:1px solid var(--rule-strong); border-radius:var(--r-md) var(--r-md) 0 0;
+           box-shadow:var(--sh-sheet); transform:translateY(100%);
+           transition:transform var(--dur-sheet) var(--ease); max-height:100%; overflow-y:auto; }
+  .sheet.on { transform:translateY(0); }
+  .grab { height:20px; display:flex; align-items:center; justify-content:center; }
+  .grab i { width:34px; height:3px; border-radius:999px; background:var(--rule-strong); display:block; }
+  .amount { padding:2px var(--pad-screen) 12px; display:flex; justify-content:space-between; align-items:flex-end; gap:12px; }
+  .amount .v small { font-size:19px; color:var(--text-3); margin-right:3px; }
+  .amount .v.zero { color:var(--text-3); }
+  .fx { font:10px/1.3 var(--font-ui); color:var(--text-3); padding:0 var(--pad-screen) 10px; margin:-8px 0 0; }
+  .seg { display:inline-flex; background:var(--surface-2); border:1px solid var(--rule-strong);
+         border-radius:var(--r-sm); padding:2px; gap:2px; flex:none; }
+  .seg button { border:0; background:none; cursor:pointer; height:26px; padding:0 10px; border-radius:var(--r-xs);
+                font:var(--w-semi) 11.5px/1 var(--font-ui); color:var(--text-3); }
+  .seg button[aria-pressed="true"] { background:var(--amber); color:var(--amber-ink); }
+  .concepto { padding:0 var(--pad-screen) 12px; }
+  .concepto input { width:100%; height:36px; background:none; border:0; border-bottom:1px solid var(--rule-strong);
+                    color:var(--text); font:14px/1 var(--font-ui); padding:0; }
+  .concepto input::placeholder { color:var(--text-3); }
+  .concepto input:focus { outline:0; border-bottom-color:var(--amber); }
+  .sec { padding:0 var(--pad-screen) 10px; }
+  .sec > .u-micro { display:block; margin-bottom:8px; }
+  .cats { display:flex; gap:6px; flex-wrap:wrap; }
+  .cat { display:inline-flex; align-items:center; gap:7px; height:32px; padding:0 11px; cursor:pointer;
+         background:var(--surface-2); border:1px solid var(--rule); border-radius:var(--r-sm);
+         font:12.5px/1 var(--font-ui); color:var(--text-2); }
+  .cat i { width:8px; height:8px; border-radius:var(--r-xs); flex:none; }
+  .cat[aria-pressed="true"] { background:var(--amber-soft); border-color:var(--amber); color:var(--text); }
+  .pad { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--rule); border-top:1px solid var(--rule); }
+  .pad button { height:50px; border:0; background:var(--surface-3); cursor:pointer; color:var(--text);
+                font-family:var(--font-figure); font-size:19px; font-variant-numeric:tabular-nums; }
+  .pad button:active { background:var(--amber-soft); }
+  .pad button.fn { color:var(--text-3); font-family:var(--font-ui); font-size:13px; }
+  .pad button.ok { background:var(--amber); color:var(--amber-ink); font-family:var(--font-ui);
+                   font-size:13px; font-weight:600; grid-row:span 2; height:auto; }
+  .pad button.ok:disabled { opacity:.4; cursor:default; }
+
+  /* ---- toast ---- */
+  .toast { position:absolute; left:50%; bottom:calc(var(--h-tabbar) + 22px); transform:translate(-50%, 12px);
+           background:var(--surface-3); border:1px solid var(--rule-strong); border-radius:var(--r-sm);
+           padding:9px 15px; font:12.5px/1 var(--font-ui); color:var(--text); z-index:6;
+           opacity:0; pointer-events:none; transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
+  .toast.on { opacity:1; transform:translate(-50%, 0); }
+
+  .hint { max-width:376px; font:11.5px/1.55 var(--font-ui); color:#8B8177; text-align:center; margin:0; }
+  .hint b { color:#B8AEA3; }
+</style>
+</head>
+<body>
+
+  <div class="bar">
+    <span>Prototipo · datos reales de Meow</span>
+    <button type="button" id="theme">Tema claro</button>
+  </div>
+
+  <div class="device">
+    <div class="app">
+
+      <header class="hd">
+        <div>
+          <span class="u-micro" id="lbl-mes">Gastado en agosto</span>
+          <span class="u-readout-l amt" id="total"><small>$</small>0</span>
+          <span class="delta" id="delta"></span>
+        </div>
+        <div class="mo">
+          <span class="m" id="mes">agosto 2026</span>
+          <span class="nav">
+            <button type="button" id="prev" aria-label="Mes anterior">&lt;</button>
+            <button type="button" id="next" aria-label="Mes siguiente">&gt;</button>
+          </span>
+        </div>
+      </header>
+
+      <div class="feed" id="feed"></div>
+
+      <button type="button" class="fab" id="fab" aria-label="Cargar gasto">+</button>
+
+      <nav class="tabs">
+        <button type="button" aria-current="page">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Movimientos</button>
+        <button type="button">
+          <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Análisis</button>
+        <button type="button">
+          <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 3v4h-4"/></svg>Recurrentes</button>
+        <button type="button">
+          <svg viewBox="0 0 24 24"><path d="M3 7h18v11H3zM3 11h18M7 15h4"/></svg>Deudas</button>
+      </nav>
+
+      <div class="scrim" id="scrim"></div>
+
+      <section class="sheet" id="sheet" aria-label="Cargar gasto">
+        <div class="grab"><i></i></div>
+        <div class="amount">
+          <span class="u-readout-xl v zero" id="v-amt"><small>$</small>0</span>
+          <span class="seg">
+            <button type="button" id="cur-ars" aria-pressed="true">$</button>
+            <button type="button" id="cur-usd" aria-pressed="false">US$</button>
+          </span>
+        </div>
+        <p class="fx" id="fx" hidden></p>
+        <div class="concepto"><input id="concepto" placeholder="Concepto — opcional"></div>
+        <div class="sec">
+          <span class="u-micro">Categoría · las más usadas primero</span>
+          <div class="cats" id="cats"></div>
+        </div>
+        <div class="sec" id="sec-sub">
+          <span class="u-micro">Subcategoría</span>
+          <div class="cats" id="subs"></div>
+        </div>
+        <div class="pad">
+          <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+          <button type="button" class="ok" id="guardar" disabled>Guardar</button>
+          <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+          <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+          <button type="button" class="fn" data-k="del">&larr;</button>
+          <button type="button" class="fn" data-k="000">000</button><button type="button" data-k="0">0</button>
+          <button type="button" class="fn" data-k="cancel">Cerrar</button>
+        </div>
+      </section>
+
+      <div class="toast" id="toast">Guardado</div>
+    </div>
+  </div>
+
+  <p class="hint">
+    Julio 2026 son los <b>51 movimientos reales</b> del export de Meow, remapeados a la taxonomía nueva:
+    el total da $899.007. Tocá el <b>+</b> y cargá un gasto para ver el camino corto.
+  </p>
+
+<script>
+(() => {
+  'use strict';
+
+  const CATS = {
+    comida:      { n:'Comida',          c:'var(--cat-comida)',     subs:['Restaurante','Delivery','Fast food','Merienda','Facultad','Postres','Propina'] },
+    transporte:  { n:'Transporte',      c:'var(--cat-transporte)', subs:['Apps','Nafta','Estacionamiento','Peajes','Mantenimiento','Público'] },
+    super:       { n:'Super',           c:'var(--cat-super)',      subs:['Super','Verdulería','Kiosco','Limpieza'] },
+    entretenim:  { n:'Entretenim.',     c:'var(--cat-entretenim)', subs:['Recitales','Cine','Videojuegos','Salidas','Eventos'] },
+    deporte:     { n:'Deporte',         c:'var(--cat-deporte)',    subs:['Fútbol','Gym','Otros'] },
+    bebidas:     { n:'Bebidas',         c:'var(--cat-bebidas)',    subs:['Sin alcohol','Alcohol','Boliche'] },
+    apuestas:    { n:'Apuestas',        c:'var(--cat-apuestas)',   subs:['Póker','Casino','Timba'] },
+    salud:       { n:'Salud',           c:'var(--cat-salud)',      subs:['Psicóloga','Médico','Farmacia','Óptica'] },
+    suscrip:     { n:'Suscripciones',   c:'var(--cat-suscrip)',    subs:['Streaming','Software','Servicios'] },
+    ropa:        { n:'Ropa',            c:'var(--cat-ropa)',       subs:['Ropa','Calzado','Accesorios'] },
+    regalos:     { n:'Regalos',         c:'var(--cat-regalos)',    subs:['Regalos','Flores','Aniversarios'] }
+  };
+  // Los cinco chips visibles cubren ~85% de los gastos del CSV.
+  const CATS_TOP = ['transporte','comida','super','entretenim','deporte'];
+
+  // julio 2026 — los 51 gastos reales del export, remapeados. m es 0-indexado.
+  const D = [
+    {m:7,d:1,  t:'juntada sabado',      v:11846, c:'comida',     s:'Restaurante', p:'Mercado Pago'},
+    {m:7,d:1,  t:'nafta lleno',         v:75000, c:'transporte', s:'Nafta',       p:'Mercado Pago'},
+
+    {m:6,d:31, t:'ida y vuelta del after', v:28457, c:'transporte', s:'Apps', p:'Mercado Pago'},
+    {m:6,d:31, t:'bills must be paid',  v:4500,  c:'apuestas',   s:'Timba',       p:'Mercado Pago'},
+    {m:6,d:30, t:'didi vuelta a3',      v:10600, c:'transporte', s:'Apps',        p:'Mercado Pago'},
+    {m:6,d:30, t:'carrot cake a3',      v:5700,  c:'comida',     s:'Postres',     p:'Efectivo'},
+    {m:6,d:30, t:'didi ida A3',         v:11000, c:'transporte', s:'Apps',        p:'Mercado Pago'},
+    {m:6,d:29, t:'ciabatton',           v:8200,  c:'comida',     s:'Merienda',    p:'Efectivo'},
+    {m:6,d:29, t:'didi a cormls',       v:14700, c:'transporte', s:'Apps',        p:'Mercado Pago'},
+    {m:6,d:26, t:'super merienda bren', v:10357, c:'super',      s:'Super',       p:'Crédito'},
+    {m:6,d:25, t:'super fsjitss',       v:16250, c:'super',      s:'Super',       p:'Crédito'},
+    {m:6,d:25, t:'Crunchyroll',         v:6300,  c:'suscrip',    s:'Streaming',   p:'Crédito', rec:true},
+    {m:6,d:24, t:'Denshattack',         v:15000, c:'entretenim', s:'Videojuegos', p:'Crédito'},
+    {m:6,d:23, t:'mcdonalds mcaya',     v:19000, c:'comida',     s:'Fast food',   p:'Mercado Pago'},
+    {m:6,d:23, t:'telo',                v:31000, c:'entretenim', s:'Salidas',     p:'Mercado Pago'},
+    {m:6,d:23, t:'super battle golf de dani', v:5250, c:'entretenim', s:'Videojuegos', p:'Mercado Pago'},
+    {m:6,d:22, t:'didi vuelta d elo d maru', v:4000, c:'transporte', s:'Apps',    p:'Mercado Pago'},
+    {m:6,d:22, t:'Figma premium',       v:22500, c:'suscrip',    s:'Software',    p:'Crédito', usd:{a:15, r:1500}},
+    {m:6,d:22, t:'monstwr de mang',     v:4400,  c:'bebidas',    s:'Sin alcohol', p:'Efectivo'},
+    {m:6,d:22, t:'ciabaton flaco',      v:8100,  c:'comida',     s:'Merienda',    p:'Efectivo'},
+    {m:6,d:22, t:'didi a la ofi',       v:12800, c:'transporte', s:'Apps',        p:'Mercado Pago'},
+    {m:6,d:19, t:'entrada imax y pochoclos', v:29200, c:'entretenim', s:'Eventos', p:'Crédito'},
+    {m:6,d:19, t:'unos panchos para todos los pibes', v:5700, c:'comida', s:'Fast food', p:'Efectivo'},
+    {m:6,d:18, t:'arabe hmcsg',         v:83600, c:'comida',     s:'Restaurante', p:'Crédito'},
+    {m:6,d:18, t:'asumo gasto Joakechi y Vee', v:20212, c:'comida', s:'Fast food', p:'Mercado Pago'},
+    {m:6,d:18, t:'un didi no se adonde', v:7400, c:'transporte', s:'Apps',        p:'Mercado Pago'},
+    {m:6,d:16, t:'una carro cake',      v:5700,  c:'comida',     s:'Postres',     p:'Efectivo'},
+    {m:6,d:16, t:'el golf pa ian',      v:7500,  c:'regalos',    s:'Regalos',     p:'Mercado Pago'},
+    {m:6,d:15, t:'milanesio y peñsi',   v:7100,  c:'comida',     s:'Restaurante', p:'Efectivo'},
+    {m:6,d:15, t:'didi',                v:17000, c:'transporte', s:'Apps',        p:'Mercado Pago'},
+    {m:6,d:15, t:'psicologa 2 ses',     v:60000, c:'salud',      s:'Psicóloga',   p:'Mercado Pago'},
+    {m:6,d:14, t:'el super battle golf para ian', v:7500, c:'regalos', s:'Regalos', p:'Mercado Pago'},
+    {m:6,d:11, t:'pizzas',              v:11857, c:'super',      s:'Super',       p:'Crédito'},
+    {m:6,d:11, t:'BRTH',                v:56480, c:'ropa',       s:'Ropa',        p:'Crédito'},
+    {m:6,d:9,  t:'dlc del outer wilds', v:7000,  c:'entretenim', s:'Videojuegos', p:'Crédito'},
+    {m:6,d:8,  t:'sushi libre',         v:43400, c:'comida',     s:'Restaurante', p:'Crédito'},
+    {m:6,d:8,  t:'medialuna c ddl',     v:6000,  c:'comida',     s:'Merienda',    p:'Efectivo'},
+    {m:6,d:8,  t:'didi al desfile',     v:15500, c:'transporte', s:'Apps',        p:'Mercado Pago'},
+    {m:6,d:8,  t:'almuerzo ofi',        v:9000,  c:'comida',     s:'Restaurante', p:'Efectivo'},
+    {m:6,d:8,  t:'didi a la ofi',       v:17900, c:'transporte', s:'Apps',        p:'Mercado Pago'},
+    {m:6,d:6,  t:'juegos de steam',     v:9000,  c:'entretenim', s:'Videojuegos', p:'Crédito'},
+    {m:6,d:6,  t:'gimnasio',            v:61000, c:'deporte',    s:'Gym',         p:'Mercado Pago'},
+    {m:6,d:5,  t:'un mc',               v:14900, c:'comida',     s:'Fast food',   p:'Mercado Pago'},
+    {m:6,d:5,  t:'futbol',              v:11800, c:'deporte',    s:'Fútbol',      p:'Efectivo'},
+    {m:6,d:4,  t:'peruano',             v:40000, c:'comida',     s:'Restaurante', p:'Crédito'},
+    {m:6,d:2,  t:'didi al teatro',      v:5500,  c:'transporte', s:'Apps',        p:'Mercado Pago'},
+    {m:6,d:2,  t:'carrot cake',         v:5700,  c:'comida',     s:'Postres',     p:'Efectivo'},
+    {m:6,d:2,  t:'didi, enpalabras',    v:11900, c:'transporte', s:'Apps',        p:'Mercado Pago'},
+    {m:6,d:1,  t:'snack, bowling y pool', v:14000, c:'entretenim', s:'Salidas',   p:'Mercado Pago'},
+    {m:6,d:1,  t:'snack, comida',       v:29700, c:'comida',     s:'Restaurante', p:'Mercado Pago'},
+    {m:6,d:1,  t:'didi a snack',        v:5930,  c:'transporte', s:'Apps',        p:'Mercado Pago'},
+    {m:6,d:1,  t:'club de la ensalada', v:15750, c:'comida',     s:'Restaurante', p:'Efectivo'},
+    {m:6,d:1,  t:'uber cormos',         v:17664, c:'transporte', s:'Apps',        p:'Mercado Pago'}
+  ];
+
+  const JUNIO_2026 = 1246224;   // total real de junio, para la comparación
+  const HOY = { y:2026, m:7, d:11 };
+  const FX_OFICIAL = 1500;      // cotización de ejemplo del prototipo
+
+  let mes = 7;                  // 0-indexado: 7 = agosto
+  const fmt = n => n.toLocaleString('es-AR');
+  const nombreMes = m => new Date(2026, m, 1).toLocaleDateString('es-AR', { month:'long' });
+
+  /* ---------- render ---------- */
+  const feed = document.getElementById('feed');
+
+  function render() {
+    const items = D.filter(x => x.m === mes);
+    const total = items.reduce((a, x) => a + x.v, 0);
+
+    document.getElementById('lbl-mes').textContent = 'Gastado en ' + nombreMes(mes);
+    document.getElementById('mes').textContent = nombreMes(mes) + ' 2026';
+    document.getElementById('total').innerHTML =
+      '<small>$</small>' + fmt(total);
+    document.getElementById('total').style.color = total ? 'var(--text)' : 'var(--text-3)';
+    document.getElementById('next').disabled = mes >= HOY.m;
+    document.getElementById('prev').disabled = mes <= 6;
+
+    // comparación contra el mes anterior
+    const prev = mes === 7 ? D.filter(x => x.m === 6).reduce((a, x) => a + x.v, 0) : JUNIO_2026;
+    const dEl = document.getElementById('delta');
+    if (!total) {
+      dEl.innerHTML = '<b>Todavía no cargaste nada</b>';
+    } else {
+      const pct = Math.round(Math.abs(total - prev) / prev * 100);
+      const menos = total < prev;
+      const w = Math.max(6, Math.min(100, Math.round(total / Math.max(total, prev) * 100)));
+      dEl.innerHTML =
+        '<span class="track"><i style="width:' + w + '%' +
+        (menos ? ';background:var(--positive)' : '') + '"></i></span>' +
+        '<b' + (menos ? ' style="color:var(--positive)"' : '') + '>' + pct +
+        '% ' + (menos ? 'menos' : 'más') + ' que ' + nombreMes(mes - 1) + '</b>';
+    }
+
+    // agrupar por día, descendente
+    feed.textContent = '';
+    if (!items.length) {
+      feed.innerHTML = '<p class="vacio">Todavía no cargaste nada en ' + nombreMes(mes) + '.</p>';
+      return;
+    }
+    const dias = [...new Set(items.map(x => x.d))].sort((a, b) => b - a);
+    for (const d of dias) {
+      const delDia = items.filter(x => x.d === d);
+      const st = delDia.reduce((a, x) => a + x.v, 0);
+      const wd = new Date(2026, mes, d).toLocaleDateString('es-AR', { weekday:'long' });
+
+      const h = document.createElement('div');
+      h.className = 'dia';
+      h.innerHTML = '<span class="d">' + wd + ' ' + d + '</span><span class="st">' + fmt(st) + '</span>';
+      feed.appendChild(h);
+
+      for (const x of delDia) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'mv';
+        b.innerHTML =
+          '<span class="body"><span class="nm">' + esc(x.t) +
+            (x.rec ? ' <span class="chip-rec">Recurrente</span>' : '') + '</span>' +
+            '<span class="sub">' + CATS[x.c].n + ' · ' + x.s + (x.p ? ' · ' + x.p : '') + '</span></span>' +
+          (x.pend ? '<span class="dot-p" title="Sin sincronizar"></span>' : '') +
+          '<span class="v">' + fmt(x.v) +
+            (x.usd ? '<em>US$ ' + x.usd.a + ' × ' + fmt(x.usd.r) + '</em>' : '') + '</span>';
+        feed.appendChild(b);
+      }
+    }
+  }
+  const esc = s => s.replace(/[&<>"]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[m]));
+
+  document.getElementById('prev').onclick = () => { mes--; render(); };
+  document.getElementById('next').onclick = () => { mes++; render(); };
+
+  /* ---------- sheet ---------- */
+  const sheet  = document.getElementById('sheet');
+  const scrim  = document.getElementById('scrim');
+  const vAmt   = document.getElementById('v-amt');
+  const fxEl   = document.getElementById('fx');
+  const okBtn  = document.getElementById('guardar');
+  const catsEl = document.getElementById('cats');
+  const subsEl = document.getElementById('subs');
+  const concEl = document.getElementById('concepto');
+
+  // el alta hereda lo último que cargaste
+  let raw = '', cur = 'ARS', cat = 'transporte', sub = 'Apps', medio = 'Mercado Pago';
+
+  function pintarCats() {
+    catsEl.textContent = '';
+    for (const k of CATS_TOP) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'cat';
+      b.setAttribute('aria-pressed', String(k === cat));
+      b.innerHTML = '<i style="background:' + CATS[k].c + '"></i>' + CATS[k].n;
+      b.onclick = () => { cat = k; sub = CATS[k].subs[0]; pintarCats(); pintarSubs(); };
+      catsEl.appendChild(b);
+    }
+  }
+  function pintarSubs() {
+    subsEl.textContent = '';
+    for (const s of CATS[cat].subs.slice(0, 4)) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'cat';
+      b.setAttribute('aria-pressed', String(s === sub));
+      b.textContent = s;
+      b.onclick = () => { sub = s; pintarSubs(); };
+      subsEl.appendChild(b);
+    }
+  }
+  function pintarMonto() {
+    const n = raw ? parseInt(raw, 10) : 0;
+    vAmt.classList.toggle('zero', !n);
+    vAmt.innerHTML = '<small>' + (cur === 'ARS' ? '$' : 'US$') + '</small>' + fmt(n);
+    okBtn.disabled = !n;
+    if (cur === 'USD' && n) {
+      fxEl.hidden = false;
+      fxEl.textContent = '≈ $' + fmt(n * FX_OFICIAL) + ' · oficial del 11 ago · se guarda la cotización del día';
+    } else {
+      fxEl.hidden = true;
+    }
+  }
+
+  function abrir() {
+    raw = ''; concEl.value = '';
+    pintarCats(); pintarSubs(); pintarMonto();
+    scrim.classList.add('on'); sheet.classList.add('on');
+  }
+  function cerrar() { scrim.classList.remove('on'); sheet.classList.remove('on'); }
+
+  document.getElementById('fab').onclick = abrir;
+  scrim.onclick = cerrar;
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrar(); });
+
+  document.getElementById('cur-ars').onclick = () => setCur('ARS');
+  document.getElementById('cur-usd').onclick = () => setCur('USD');
+  function setCur(c) {
+    cur = c;
+    document.getElementById('cur-ars').setAttribute('aria-pressed', String(c === 'ARS'));
+    document.getElementById('cur-usd').setAttribute('aria-pressed', String(c === 'USD'));
+    pintarMonto();
+  }
+
+  for (const b of document.querySelectorAll('.pad button[data-k]')) {
+    b.onclick = () => {
+      const k = b.dataset.k;
+      if (k === 'del') raw = raw.slice(0, -1);
+      else if (k === 'cancel') return cerrar();
+      else if (k === '000') { if (raw) raw = (raw + '000').slice(0, 9); }
+      else raw = (raw + k).replace(/^0+/, '').slice(0, 9);
+      pintarMonto();
+    };
+  }
+
+  const toast = document.getElementById('toast');
+  okBtn.onclick = () => {
+    const n = parseInt(raw, 10);
+    if (!n) return;
+    const mov = {
+      m: HOY.m, d: HOY.d,
+      t: concEl.value.trim() || CATS[cat].n + ' · ' + sub,
+      v: cur === 'USD' ? n * FX_OFICIAL : n,
+      c: cat, s: sub, p: medio, pend: true
+    };
+    if (cur === 'USD') mov.usd = { a:n, r:FX_OFICIAL };
+    D.unshift(mov);
+    mes = HOY.m;
+    cerrar(); render();
+    toast.classList.add('on');
+    setTimeout(() => toast.classList.remove('on'), 1600);
+  };
+
+  /* ---------- tema ---------- */
+  const tBtn = document.getElementById('theme');
+  tBtn.onclick = () => {
+    const claro = document.documentElement.dataset.theme === 'light';
+    document.documentElement.dataset.theme = claro ? 'dark' : 'light';
+    tBtn.textContent = claro ? 'Tema claro' : 'Tema oscuro';
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>

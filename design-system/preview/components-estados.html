@@ -1,0 +1,126 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Estados vacíos, offline y error</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:24px; background:var(--bg); font-family:var(--font-ui); }
+  h3 { font:var(--w-semi) 12px/1 var(--font-ui); letter-spacing:.14em; text-transform:uppercase;
+       color:var(--text-3); margin:0 0 6px; }
+  .cap { font:11.5px/1.5 var(--font-ui); color:var(--text-3); margin:0 0 16px; max-width:58ch; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; max-width:900px; }
+  .card { background:var(--bg); border:1px solid var(--rule); border-radius:var(--r-md); overflow:hidden; }
+  .card > .u-micro { display:block; padding:11px var(--pad-screen) 0; }
+
+  .empty { padding:32px var(--pad-screen) 34px; text-align:center; }
+  .empty p { margin:0 0 14px; font:13.5px/1.5 var(--font-ui); color:var(--text-2); }
+  .empty .btn { height:var(--h-control); padding:0 18px; border-radius:var(--r-sm); border:0; cursor:pointer;
+                background:var(--amber); color:var(--amber-ink); font:var(--w-semi) 13px/1 var(--font-ui); }
+
+  .banner { display:flex; align-items:center; gap:10px; margin:12px var(--pad-screen) 14px;
+            padding:11px 13px; background:var(--info-soft); border-left:2px solid var(--pendiente);
+            font:12.5px/1.45 var(--font-ui); color:var(--text-2); }
+  .banner.err { border-left-color:var(--negative); }
+  .banner .dot { width:6px; height:6px; border-radius:50%; background:var(--pendiente); flex:none; }
+  .banner b { color:var(--text); font-weight:500; }
+  .banner .act { margin-left:auto; flex:none; background:none; border:0; cursor:pointer;
+                 color:var(--amber); font:var(--w-semi) 12px/1 var(--font-ui); }
+
+  .mv { display:flex; align-items:center; gap:10px; min-height:var(--h-row); padding:8px var(--pad-screen); }
+  .mv + .mv { border-top:1px solid var(--rule); }
+  .mv .body { flex:1; min-width:0; }
+  .mv .nm { display:block; font:var(--t-body-s)/1.3 var(--font-ui); color:var(--text); }
+  .mv .sub { display:block; font:var(--t-micro)/1.4 var(--font-ui); text-transform:uppercase; letter-spacing:.06em; color:var(--text-3); margin-top:2px; }
+  .mv .v { flex:none; font-family:var(--font-figure); font-size:var(--t-figure); font-variant-numeric:tabular-nums; color:var(--amber); }
+  .mv .v em { display:block; font-style:normal; font-size:9.5px; color:var(--text-3); margin-top:2px; }
+  .dot-p { width:5px; height:5px; border-radius:50%; background:var(--pendiente); flex:none; }
+  .list { padding-bottom:6px; }
+</style></head>
+<body>
+  <h3>Estados</h3>
+  <p class="cap">
+    Cinco situaciones que en una app de plata pasan todo el tiempo. Ninguna se resuelve con
+    «Ups, algo salió mal»: cada mensaje dice qué pasó y qué se puede hacer.
+  </p>
+
+  <div class="grid">
+
+    <div class="card">
+      <span class="u-micro">Mes en curso sin movimientos</span>
+      <div class="empty">
+        <p>Todavía no cargaste nada en agosto.</p>
+        <button class="btn">Cargar el primero</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="u-micro">Pestaña que todavía no existe</span>
+      <div class="empty">
+        <p style="color:var(--text-3)">El análisis por categoría llega en la próxima iteración.<br>
+        Mientras tanto, todo lo que cargues ya queda listo para aparecer acá.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="u-micro">Sin señal</span>
+      <div class="banner">
+        <span class="dot"></span>
+        <span><b>Sin señal.</b> Se guarda acá y sube cuando vuelva.</span>
+      </div>
+      <div class="list">
+        <div class="mv">
+          <span class="body"><span class="nm">ciabaton flaco</span><span class="sub">Comida · Merienda</span></span>
+          <span class="dot-p"></span><span class="v">8.100</span>
+        </div>
+        <div class="mv">
+          <span class="body"><span class="nm">didi a la ofi</span><span class="sub">Transporte · Apps</span></span>
+          <span class="dot-p"></span><span class="v">12.800</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="u-micro">Falló la cotización</span>
+      <div class="banner err">
+        <span><b>No se pudo traer la cotización.</b> El gasto quedó en dólares, sin convertir.</span>
+        <button class="act">Reintentar</button>
+      </div>
+      <div class="list">
+        <div class="mv">
+          <span class="body"><span class="nm">Figma premium</span><span class="sub">Suscripciones · Software</span></span>
+          <span class="v" style="color:var(--text-3)">US$ 15<em>a convertir</em></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="u-micro">Dato estimado</span>
+      <div class="list">
+        <div class="mv">
+          <span class="body"><span class="nm">Figma premium</span><span class="sub">Suscripciones · Software</span></span>
+          <span class="v u-estimado">22.500<em style="border:0">US$ 15 × 1.500 · vie 21</em></span>
+        </div>
+        <div class="mv">
+          <span class="body"><span class="nm">Crunchyroll</span><span class="sub">Suscripciones · Streaming · proyectado</span></span>
+          <span class="v u-estimado">6.300</span>
+        </div>
+      </div>
+      <p class="cap" style="padding:0 var(--pad-screen) 12px;margin:0">
+        Subrayado punteado = el número es aproximado. Cotización de un día no hábil, o instancia
+        de un recurrente que todavía no ocurrió.
+      </p>
+    </div>
+
+    <div class="card">
+      <span class="u-micro">Importación con pendientes</span>
+      <div class="banner">
+        <span><b>1.152 movimientos importados.</b> 43 quedaron sin categoría.</span>
+        <button class="act">Clasificar</button>
+      </div>
+      <div class="empty" style="padding-top:6px">
+        <p style="color:var(--text-3);font-size:12.5px">La bandeja de pendientes te los muestra de a uno,
+        con el comentario original de Meow a la vista.</p>
+      </div>
+    </div>
+
+  </div>
+</body></html>

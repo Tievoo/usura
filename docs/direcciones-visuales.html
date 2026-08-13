@@ -1,0 +1,970 @@
+<title>Usura — Direcciones visuales</title>
+
+<style>
+  /* ---------- page tokens: light ---------- */
+  :root {
+    --paper:   #F1F3EF;
+    --card:    #FAFBF8;
+    --ink:     #14181A;
+    --ink-2:   #3D4547;
+    --muted:   #6A7370;
+    --rule:    #D7DCD5;
+    --rule-2:  #E7EBE5;
+    --accent:  #2C5248;
+    --accent-soft: #E0EAE4;
+    --bezel:   #C9CFC7;
+    --shadow:  0 1px 2px rgba(20,24,26,.05), 0 12px 28px -14px rgba(20,24,26,.18);
+
+    --display: "Bahnschrift SemiCondensed", "Bahnschrift", "Franklin Gothic Medium", "Arial Narrow", "Helvetica Neue", sans-serif;
+    --body: "Sitka Text", Constantia, Georgia, "Times New Roman", serif;
+    --mono: Consolas, "Cascadia Mono", "DejaVu Sans Mono", ui-monospace, monospace;
+    --ui: "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:  #0F1312;
+      --card:   #161B19;
+      --ink:    #E7EBE5;
+      --ink-2:  #C3CBC5;
+      --muted:  #8B948E;
+      --rule:   #262D2A;
+      --rule-2: #1E2422;
+      --accent: #85BCA9;
+      --accent-soft: #1B2724;
+      --bezel:  #2A312E;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 34px -16px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:  #0F1312;
+    --card:   #161B19;
+    --ink:    #E7EBE5;
+    --ink-2:  #C3CBC5;
+    --muted:  #8B948E;
+    --rule:   #262D2A;
+    --rule-2: #1E2422;
+    --accent: #85BCA9;
+    --accent-soft: #1B2724;
+    --bezel:  #2A312E;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 34px -16px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+
+  /* ---------- header ---------- */
+  .masthead { padding: 72px 0 0; }
+  .eyebrow {
+    font-family: var(--display);
+    text-transform: uppercase;
+    letter-spacing: .16em;
+    font-size: 12px;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(38px, 6vw, 62px);
+    line-height: 1.03;
+    letter-spacing: -.015em;
+    margin: 0 0 22px;
+    text-wrap: balance;
+    max-width: 20ch;
+  }
+  .lead { font-size: 19px; color: var(--ink-2); max-width: 62ch; margin: 0 0 14px; }
+  .lead b { color: var(--ink); font-weight: 600; }
+  .lead:last-of-type { margin-bottom: 0; }
+
+  .revision {
+    max-width: 62ch;
+    margin: 26px 0 0;
+    padding: 18px 20px;
+    background: var(--card);
+    border-left: 2px solid var(--accent);
+    font-size: 16px;
+    color: var(--ink-2);
+  }
+  .revision b { color: var(--ink); font-weight: 600; }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: 40px 0 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .fact {
+    flex: 1 1 180px;
+    padding: 18px 22px 18px 0;
+    border-right: 1px solid var(--rule);
+  }
+  .fact:last-child { border-right: 0; }
+  .fact dt {
+    font-family: var(--display);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    font-size: 10.5px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .fact dd {
+    margin: 0;
+    font-family: var(--display);
+    font-size: 21px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- direction sections ---------- */
+  .dir {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 372px;
+    gap: 56px;
+    align-items: start;
+    padding: 72px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 5px 10px;
+    margin-bottom: 18px;
+  }
+  .dir h2 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(30px, 4vw, 42px);
+    line-height: 1.05;
+    letter-spacing: -.01em;
+    margin: 0 0 4px;
+  }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: .04em;
+    margin: 0 0 20px;
+  }
+  .thesis { margin: 0 0 28px; max-width: 58ch; color: var(--ink-2); }
+
+  .specs { display: grid; gap: 22px; max-width: 58ch; }
+  .spec-row {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+    padding-top: 16px;
+    border-top: 1px solid var(--rule-2);
+  }
+  .spec-row > dt {
+    font-family: var(--display);
+    text-transform: uppercase;
+    letter-spacing: .11em;
+    font-size: 10.5px;
+    color: var(--muted);
+    padding-top: 3px;
+  }
+  .spec-row > dd { margin: 0; font-size: 15.5px; color: var(--ink-2); }
+
+  .sw { display: flex; flex-wrap: wrap; gap: 14px; }
+  .sw > span { display: flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+  .sw i { width: 20px; height: 20px; display: block; border: 1px solid rgba(0,0,0,.14); }
+
+  .typespec { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); line-height: 1.75; }
+
+  .verdict { display: grid; gap: 10px; }
+  .verdict p { margin: 0; font-size: 15.5px; }
+  .verdict p b {
+    font-family: var(--display);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    font-size: 10.5px;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 74px;
+  }
+  .verdict .win b { color: var(--accent); }
+  .verdict .risk b { color: var(--muted); }
+  .verdict .risk { color: var(--muted); }
+
+  /* ---------- device frame (neutral, same for all three) ---------- */
+  .stage { position: sticky; top: 28px; }
+  .device {
+    width: 372px;
+    max-width: 100%;
+    border: 1px solid var(--bezel);
+    border-radius: 26px;
+    padding: 9px;
+    background: var(--card);
+    box-shadow: var(--shadow);
+  }
+  .screen {
+    height: 660px;
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .caption {
+    margin: 12px 0 0;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: .03em;
+  }
+  /* the movement list clips at the bottom on purpose: it scrolls */
+  .feed { flex: 1; overflow: hidden; }
+
+  /* ================= DIRECTION A — COMANDA ================= */
+  .a {
+    --pa:   #F8F7F2;
+    --ai:   #1A1A17;
+    --am:   #6E6C61;
+    --adot: #B4B2A6;
+    --asoft:#E4E2D8;
+    --astamp: #8C2F39;
+    --ain:  #2F6B4F;
+    background: var(--pa);
+    color: var(--ai);
+    font-family: var(--mono);
+    font-size: 12.5px;
+  }
+  .a .a-hd { padding: 15px 15px 11px; border-bottom: 1px solid var(--ai); }
+  .a .a-hd-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .a .lbl { font-size: 9.5px; letter-spacing: .18em; color: var(--am); display: block; margin-bottom: 3px; }
+  .a .amt-mes {
+    font-family: var(--display); font-weight: 600; font-size: 27px; line-height: 1;
+    letter-spacing: -.01em; font-variant-numeric: tabular-nums; display: block;
+  }
+  .a .sub-mes { font-size: 10.5px; color: var(--am); margin-top: 4px; display: block; }
+  .a .sub-mes b { color: var(--ain); font-weight: 400; }
+  .a .a-mo { text-align: right; flex: none; }
+  .a .a-mo .m { font-size: 11.5px; letter-spacing: .08em; display: block; margin-bottom: 5px; }
+  .a .a-mo .nav { display: flex; gap: 4px; justify-content: flex-end; }
+  .a .a-mo button {
+    font: inherit; font-family: var(--mono); color: var(--ai);
+    background: none; border: 1px solid var(--adot); width: 21px; height: 21px; cursor: pointer; padding: 0; line-height: 1;
+  }
+  .a .a-mo button:hover { border-color: var(--ai); }
+
+  .a .day { display: flex; align-items: baseline; padding: 11px 15px 4px; font-size: 10px; letter-spacing: .13em; color: var(--am); }
+  .a .day .ldr { flex: 1; border-bottom: 1px dotted var(--adot); margin: 0 7px; transform: translateY(-3px); }
+  .a .day .st { font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+  .a .mv { padding: 5px 15px 6px; }
+  .a .mv + .mv { border-top: 1px dotted var(--asoft); }
+  .a .mv-top { display: flex; align-items: baseline; }
+  .a .mv-top .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 178px; }
+  .a .mv-top .ldr { flex: 1; border-bottom: 1px dotted var(--adot); margin: 0 6px; transform: translateY(-3.5px); min-width: 8px; }
+  .a .mv-top .v { font-variant-numeric: tabular-nums; }
+  .a .mv-sub { font-size: 10px; color: var(--am); display: flex; gap: 6px; align-items: center; margin-top: 1px; }
+  .a .stamp { color: var(--astamp); border: 1px solid var(--astamp); padding: 0 3px; font-size: 8.5px; letter-spacing: .06em; }
+
+  .a .a-add {
+    margin: 0 15px 11px; text-align: center; border: 1px solid var(--ai); padding: 11px;
+    letter-spacing: .16em; font-size: 11.5px; cursor: pointer; background: var(--pa); color: var(--ai);
+    font-family: var(--mono); flex: none;
+  }
+  .a .a-add:hover { background: var(--ai); color: var(--pa); }
+  .a .tabs { display: flex; border-top: 1px solid var(--ai); flex: none; }
+  .a .tabs button {
+    flex: 1; background: none; border: 0; border-right: 1px dotted var(--adot); padding: 11px 2px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: .1em; color: var(--am); cursor: pointer;
+  }
+  .a .tabs button:last-child { border-right: 0; }
+  .a .tabs button[aria-current] { color: var(--pa); background: var(--ai); }
+
+  /* ================= DIRECTION B — INSTRUMENTO ================= */
+  .b {
+    --bg:   #141210;
+    --sur:  #1D1A17;
+    --bi:   #EDE7DE;
+    --bm:   #8B8177;
+    --br:   #2E2924;
+    --amber:#DDA544;
+    --teal: #5FA391;
+    background: var(--bg);
+    color: var(--bi);
+    font-family: var(--ui);
+  }
+  .b .ulbl { font-size: 9px; text-transform: uppercase; letter-spacing: .2em; color: var(--bm); display: block; }
+  .b .b-hd { padding: 17px 16px 14px; border-bottom: 1px solid var(--br); display: flex; justify-content: space-between; align-items: flex-start; }
+  .b .amt-mes {
+    font-family: var(--display); font-weight: 600; font-size: 30px; line-height: 1;
+    letter-spacing: -.015em; font-variant-numeric: tabular-nums; display: block; margin: 6px 0 5px;
+  }
+  .b .amt-mes small { font-size: 17px; color: var(--bm); margin-right: 2px; }
+  .b .sub-mes { font-size: 10.5px; color: var(--bm); display: flex; align-items: center; gap: 7px; }
+  .b .sub-mes .track { width: 42px; height: 2px; background: var(--br); position: relative; display: block; }
+  .b .sub-mes .track i { position: absolute; inset: 0 28% 0 0; background: var(--teal); display: block; }
+  .b .sub-mes b { color: var(--teal); font-weight: 400; }
+  .b .b-mo { text-align: right; flex: none; }
+  .b .b-mo .m { font-size: 12.5px; display: block; margin-bottom: 6px; }
+  .b .b-mo .nav { display: flex; gap: 5px; justify-content: flex-end; }
+  .b .b-mo button {
+    background: var(--sur); border: 1px solid var(--br); color: var(--bm);
+    width: 25px; height: 25px; border-radius: 3px; cursor: pointer; font-family: var(--ui); font-size: 11px; padding: 0;
+  }
+  .b .b-mo button:hover { color: var(--bi); border-color: var(--bm); }
+
+  .b .day {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 13px 16px 5px; font-size: 9px; text-transform: uppercase; letter-spacing: .18em; color: var(--bm);
+  }
+  .b .day .st { font-family: var(--mono); letter-spacing: .04em; }
+  .b .mv { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 16px 8px; }
+  .b .mv + .mv { border-top: 1px solid var(--br); }
+  .b .mv .nm { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .b .mv .sub { font-size: 9.5px; color: var(--bm); letter-spacing: .06em; text-transform: uppercase; margin-top: 2px; display: block; }
+  .b .mv .v { font-family: var(--mono); font-size: 12.5px; color: var(--amber); font-variant-numeric: tabular-nums; flex: none; }
+  .b .mv .rec { color: var(--teal); border: 1px solid var(--br); padding: 0 4px; font-size: 8.5px; letter-spacing: .08em; }
+
+  .b .b-fab {
+    position: absolute; right: 15px; bottom: 68px;
+    background: var(--amber); color: #1B1509; border: 0; border-radius: 50%;
+    width: 52px; height: 52px; font-family: var(--ui); font-size: 25px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 6px 18px -4px rgba(0,0,0,.55); line-height: 1;
+  }
+  .b .b-fab:hover { filter: brightness(1.08); }
+  .b .tabs { display: flex; border-top: 1px solid var(--br); background: var(--sur); flex: none; }
+  .b .tabs button {
+    flex: 1; background: none; border: 0; padding: 12px 2px 11px;
+    font-family: var(--ui); font-size: 9.5px; letter-spacing: .06em; color: var(--bm); cursor: pointer;
+    border-top: 2px solid transparent; margin-top: -1px;
+  }
+  .b .tabs button[aria-current] { color: var(--amber); border-top-color: var(--amber); }
+
+  /* ================= DIRECTION C — BLOQUES ================= */
+  .c {
+    --cbg:  #F4F4EE;
+    --ci:   #111111;
+    --cm:   #6C6C64;
+    --cr:   #DCDCD3;
+    --comida: #DD5B33;
+    --trans:  #2F5AC8;
+    --entre:  #9E3F96;
+    --dep:    #3B8A5A;
+    --sal:    #1F9AA2;
+    --sup:    #C08A1E;
+    background: var(--cbg);
+    color: var(--ci);
+    font-family: var(--ui);
+  }
+  .c .c-hd { padding: 15px 15px 13px; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid var(--ci); }
+  .c .lbl { font-size: 9.5px; text-transform: uppercase; letter-spacing: .14em; color: var(--cm); font-weight: 700; display: block; }
+  .c .amt-mes {
+    font-family: "Segoe UI Black", "Arial Black", "Franklin Gothic Heavy", var(--ui);
+    font-weight: 900; font-size: 30px; line-height: 1.05; letter-spacing: -.025em;
+    display: block; margin: 3px 0 3px; font-variant-numeric: tabular-nums;
+  }
+  .c .sub-mes { font-size: 10.5px; color: var(--cm); font-weight: 600; display: block; }
+  .c .sub-mes b { color: var(--dep); }
+  .c .c-mo { text-align: right; flex: none; }
+  .c .c-mo .m { font-size: 12.5px; font-weight: 700; display: block; margin-bottom: 6px; }
+  .c .c-mo .nav { display: flex; gap: 4px; justify-content: flex-end; }
+  .c .c-mo button {
+    background: var(--ci); color: var(--cbg); border: 0; width: 23px; height: 23px;
+    font-family: var(--ui); font-size: 11px; cursor: pointer; padding: 0; line-height: 1;
+  }
+  .c .c-mo button:hover { background: var(--comida); }
+
+  .c .day {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 12px 15px 5px; font-size: 9.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--cm); font-weight: 700;
+  }
+  .c .day .st { font-variant-numeric: tabular-nums; }
+  .c .mv { display: flex; gap: 9px; align-items: center; padding: 7px 15px 8px; }
+  .c .mv + .mv { border-top: 1px solid var(--cr); }
+  .c .mv .chip { width: 5px; height: 30px; flex: none; }
+  .c .mv .body { flex: 1; min-width: 0; }
+  .c .mv .nm { font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .c .mv .sub { font-size: 10px; color: var(--cm); display: block; }
+  .c .mv .v { font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; flex: none; }
+  .c .badge { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; background: var(--ci); color: var(--cbg); padding: 1px 4px; }
+
+  .c .c-add {
+    background: var(--ci); color: var(--cbg); border: 0; margin: 0 15px 11px; padding: 13px;
+    font-family: "Segoe UI Black", "Arial Black", var(--ui); font-weight: 900;
+    font-size: 12.5px; letter-spacing: .02em; cursor: pointer; text-transform: uppercase; flex: none;
+  }
+  .c .c-add:hover { background: var(--comida); }
+  .c .tabs { display: flex; gap: 3px; padding: 0 15px 13px; flex: none; }
+  .c .tabs button {
+    flex: 1; background: var(--cr); border: 0; padding: 9px 2px;
+    font-family: var(--ui); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+    color: var(--cm); cursor: pointer;
+  }
+  .c .tabs button[aria-current] { background: var(--ci); color: var(--cbg); }
+  .c .tabs button:hover:not([aria-current]) { color: var(--ci); }
+
+  /* ---------- structure table ---------- */
+  .structure { padding: 68px 0 0; }
+  .structure h2, .closing h2 {
+    font-family: var(--display); font-weight: 600; font-size: clamp(26px, 3.4vw, 34px);
+    margin: 0 0 10px; letter-spacing: -.01em;
+  }
+  .structure > p { max-width: 66ch; color: var(--ink-2); margin: 0 0 30px; }
+  .tabmap { display: grid; gap: 0; max-width: 78ch; }
+  .tabmap > div {
+    display: grid; grid-template-columns: 140px minmax(0, 1fr) 96px;
+    gap: 20px; padding: 16px 0; border-top: 1px solid var(--rule);
+    align-items: baseline; font-size: 15.5px; color: var(--ink-2);
+  }
+  .tabmap > div:last-child { border-bottom: 1px solid var(--rule); }
+  .tabmap .t { font-family: var(--display); font-weight: 600; color: var(--ink); letter-spacing: .01em; font-size: 17px; }
+  .tabmap .it { font-family: var(--mono); font-size: 11.5px; color: var(--muted); text-align: right; }
+
+  /* ---------- closing ---------- */
+  .closing { padding: 62px 0 24px; }
+  .steps { display: grid; gap: 0; max-width: 74ch; margin: 20px 0 0; padding: 0; list-style: none; counter-reset: s; }
+  .steps li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 18px;
+    padding: 18px 0;
+    border-top: 1px solid var(--rule);
+    color: var(--ink-2);
+  }
+  .steps li::before {
+    content: counter(s, decimal-leading-zero);
+    font-family: var(--mono); font-size: 12px; color: var(--accent); padding-top: 5px;
+  }
+  .steps li b { color: var(--ink); font-family: var(--display); font-weight: 600; letter-spacing: .01em; }
+  .note {
+    margin: 40px 0 0; padding: 20px 22px;
+    background: var(--card); border-left: 2px solid var(--accent);
+    max-width: 74ch; color: var(--ink-2); font-size: 16px;
+  }
+  footer {
+    border-top: 1px solid var(--rule);
+    margin-top: 52px; padding: 22px 0 60px;
+    font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: space-between;
+  }
+
+  :where(button):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (max-width: 900px) {
+    .dir { grid-template-columns: minmax(0, 1fr); gap: 34px; }
+    .stage { position: static; justify-self: center; }
+    .masthead { padding-top: 48px; }
+    .fact { border-right: 0; border-bottom: 1px solid var(--rule-2); flex-basis: 100%; padding-right: 0; }
+    .fact:last-child { border-bottom: 0; }
+    .tabmap > div { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+    .tabmap .it { text-align: left; }
+  }
+  @media (max-width: 460px) {
+    .wrap { padding: 0 18px; }
+    body { font-size: 16px; }
+    .device { width: 100%; }
+    .spec-row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <span class="eyebrow">Usura · decisión de diseño · revisión 2</span>
+    <h1>Tres direcciones para la app</h1>
+    <p class="lead">
+      Las tres muestran la misma pantalla —<b>Movimientos</b>, la que vas a ver el 90% del tiempo—
+      con tus gastos reales de julio 2026: $899.007 en 51 movimientos, un 28% menos que junio.
+      El único número ilustrativo es la cotización del dólar.
+    </p>
+    <p class="lead">
+      Mirálas pensando en el caso real: cargar un gasto parado en el colectivo, con una mano,
+      diez segundos después de pagar.
+    </p>
+
+    <p class="revision">
+      <b>Qué cambió respecto de la primera versión.</b> El total del mes bajó de titular a dato:
+      va arriba a la izquierda, en cuerpo mediano, con el mes y las flechas del otro lado.
+      El desglose por categoría salió de esta pantalla y se fue a su propia pestaña. Lo que ganó
+      todo ese espacio es la lista de movimientos, agrupada por día con subtotal diario — que es
+      lo que realmente venís a mirar cuando abrís la app.
+    </p>
+
+    <dl class="facts">
+      <div class="fact"><dt>Pantalla mostrada</dt><dd>Movimientos</dd></div>
+      <div class="fact"><dt>Datos</dt><dd>Julio 2026 · reales</dd></div>
+      <div class="fact"><dt>Gastado</dt><dd>$899.007</dd></div>
+      <div class="fact"><dt>Movimientos</dt><dd>51</dd></div>
+    </dl>
+  </header>
+
+  <main>
+
+    <!-- =============== A =============== -->
+    <section class="dir">
+      <div>
+        <span class="tag">Dirección A</span>
+        <h2>Comanda</h2>
+        <p class="kicker">papel · monoespaciada · densa</p>
+        <p class="thesis">
+          El ticket fiscal y la comanda del bar. Cero decoración: monoespaciada de punta a punta,
+          guiones de puntos que llevan el ojo hasta el número, subtotal al final de cada día como
+          en una cuenta de restaurante. La app no se disfraza de banco; se comporta como el papel
+          que ya tenés en el bolsillo, que es el objeto que un gasto realmente produce.
+        </p>
+
+        <dl class="specs">
+          <div class="spec-row">
+            <dt>Paleta</dt>
+            <dd class="sw">
+              <span><i style="background:#F8F7F2"></i>F8F7F2</span>
+              <span><i style="background:#1A1A17"></i>1A1A17</span>
+              <span><i style="background:#8C2F39"></i>8C2F39</span>
+              <span><i style="background:#2F6B4F"></i>2F6B4F</span>
+              <span><i style="background:#B4B2A6"></i>B4B2A6</span>
+            </dd>
+          </div>
+          <div class="spec-row">
+            <dt>Tipografía</dt>
+            <dd class="typespec">
+              Datos y texto — monoespaciada, 12,5px<br>
+              Total del mes — condensada semibold, 27px<br>
+              Días y etiquetas — versalitas, tracking .13em
+            </dd>
+          </div>
+          <div class="spec-row">
+            <dt>Veredicto</dt>
+            <dd class="verdict">
+              <p class="win"><b>Gana</b> Densidad honesta. Entran diez movimientos con sus días y subtotales sin sentirse apretado, y el monto queda siempre alineado a la derecha, donde el ojo lo va a buscar.</p>
+              <p class="risk"><b>Arriesga</b> Es austera a propósito. La pestaña de Análisis, que sí necesita gráficos y color, va a tener que forzar este mundo o romperlo.</p>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="stage">
+        <div class="device">
+          <div class="screen a">
+
+            <div class="a-hd">
+              <div class="a-hd-top">
+                <div>
+                  <span class="lbl">GASTADO EN JULIO</span>
+                  <span class="amt-mes">$899.007</span>
+                  <span class="sub-mes"><b>28% menos que junio</b> · 51 mov.</span>
+                </div>
+                <div class="a-mo">
+                  <span class="m">JUL 2026</span>
+                  <span class="nav">
+                    <button type="button" aria-label="Mes anterior">&lt;</button>
+                    <button type="button" aria-label="Mes siguiente">&gt;</button>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="feed">
+              <div class="day"><span>VIE 31</span><span class="ldr"></span><span class="st">32.957</span></div>
+              <div class="mv">
+                <div class="mv-top"><span class="nm">ida y vuelta del after</span><span class="ldr"></span><span class="v">28.457</span></div>
+                <div class="mv-sub"><span>Transporte / Apps</span><span>·</span><span>Mercado Pago</span></div>
+              </div>
+              <div class="mv">
+                <div class="mv-top"><span class="nm">bills must be paid</span><span class="ldr"></span><span class="v">4.500</span></div>
+                <div class="mv-sub"><span>Apuestas / Timba</span><span>·</span><span>Mercado Pago</span></div>
+              </div>
+
+              <div class="day"><span>JUE 30</span><span class="ldr"></span><span class="st">27.300</span></div>
+              <div class="mv">
+                <div class="mv-top"><span class="nm">didi vuelta a3</span><span class="ldr"></span><span class="v">10.600</span></div>
+                <div class="mv-sub"><span>Transporte / Apps</span></div>
+              </div>
+              <div class="mv">
+                <div class="mv-top"><span class="nm">carrot cake a3</span><span class="ldr"></span><span class="v">5.700</span></div>
+                <div class="mv-sub"><span>Comida / Postres</span><span>·</span><span>Efectivo</span></div>
+              </div>
+              <div class="mv">
+                <div class="mv-top"><span class="nm">didi ida A3</span><span class="ldr"></span><span class="v">11.000</span></div>
+                <div class="mv-sub"><span>Transporte / Apps</span></div>
+              </div>
+
+              <div class="day"><span>MIÉ 29</span><span class="ldr"></span><span class="st">22.900</span></div>
+              <div class="mv">
+                <div class="mv-top"><span class="nm">ciabatton</span><span class="ldr"></span><span class="v">8.200</span></div>
+                <div class="mv-sub"><span>Comida / Merienda</span></div>
+              </div>
+              <div class="mv">
+                <div class="mv-top"><span class="nm">didi a cormls</span><span class="ldr"></span><span class="v">14.700</span></div>
+                <div class="mv-sub"><span>Transporte / Apps</span></div>
+              </div>
+
+              <div class="day"><span>DOM 26</span><span class="ldr"></span><span class="st">10.357</span></div>
+              <div class="mv">
+                <div class="mv-top"><span class="nm">super merienda bren</span><span class="ldr"></span><span class="v">10.357</span></div>
+                <div class="mv-sub"><span>Supermercado</span><span>·</span><span>Crédito</span></div>
+              </div>
+
+              <div class="day"><span>SÁB 25</span><span class="ldr"></span><span class="st">22.550</span></div>
+              <div class="mv">
+                <div class="mv-top"><span class="nm">super fsjitss</span><span class="ldr"></span><span class="v">16.250</span></div>
+                <div class="mv-sub"><span>Supermercado</span></div>
+              </div>
+              <div class="mv">
+                <div class="mv-top"><span class="nm">Crunchyroll</span><span class="ldr"></span><span class="v">6.300</span></div>
+                <div class="mv-sub"><span>Suscripciones</span><span class="stamp">RECURRENTE</span></div>
+              </div>
+            </div>
+
+            <button type="button" class="a-add">+ CARGAR GASTO</button>
+            <div class="tabs">
+              <button type="button" aria-current="page">MOVIM.</button>
+              <button type="button">ANÁLISIS</button>
+              <button type="button">RECURR.</button>
+              <button type="button">DEUDAS</button>
+            </div>
+          </div>
+        </div>
+        <p class="caption">A · Comanda</p>
+      </div>
+    </section>
+
+    <!-- =============== B =============== -->
+    <section class="dir">
+      <div>
+        <span class="tag">Dirección B</span>
+        <h2>Instrumento</h2>
+        <p class="kicker">oscura · medición · ámbar sobre carbón</p>
+        <p class="thesis">
+          Un panel de medición, oscuro y calmo. El total es una lectura de referencia arriba a la
+          izquierda, con una barra mínima que compara contra el mes anterior sin ocupar lugar.
+          Ámbar sobre carbón cálido, no el negro azulado de cualquier dashboard: se lee de noche
+          en la cama sin quemarte los ojos, que es cuando uno realmente se pone a cargar los
+          gastos del día.
+        </p>
+
+        <dl class="specs">
+          <div class="spec-row">
+            <dt>Paleta</dt>
+            <dd class="sw">
+              <span><i style="background:#141210"></i>141210</span>
+              <span><i style="background:#1D1A17"></i>1D1A17</span>
+              <span><i style="background:#EDE7DE"></i>EDE7DE</span>
+              <span><i style="background:#DDA544"></i>DDA544</span>
+              <span><i style="background:#5FA391"></i>5FA391</span>
+            </dd>
+          </div>
+          <div class="spec-row">
+            <dt>Tipografía</dt>
+            <dd class="typespec">
+              Total del mes — condensada semibold, 30px<br>
+              Interfaz — sans humanista, 12,5px<br>
+              Cifras — monoespaciada tabular<br>
+              Días y micro-etiquetas — versalitas, tracking .18em
+            </dd>
+          </div>
+          <div class="spec-row">
+            <dt>Veredicto</dt>
+            <dd class="verdict">
+              <p class="win"><b>Gana</b> Escala. Es la única de las tres donde la pestaña de Análisis, con series por año y comparativas en dólares, va a entrar sin pelearse con nada.</p>
+              <p class="risk"><b>Arriesga</b> El oscuro fijo. Al sol, un fondo negro en el celular pelea contra el reflejo justo en el momento de cargar el gasto.</p>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="stage">
+        <div class="device">
+          <div class="screen b">
+
+            <div class="b-hd">
+              <div>
+                <span class="ulbl">Gastado en julio</span>
+                <span class="amt-mes"><small>$</small>899.007</span>
+                <span class="sub-mes"><span class="track"><i></i></span><b>28% menos que junio</b></span>
+              </div>
+              <div class="b-mo">
+                <span class="m">julio 2026</span>
+                <span class="nav">
+                  <button type="button" aria-label="Mes anterior">&lt;</button>
+                  <button type="button" aria-label="Mes siguiente">&gt;</button>
+                </span>
+              </div>
+            </div>
+
+            <div class="feed">
+              <div class="day"><span>Viernes 31</span><span class="st">32.957</span></div>
+              <div class="mv">
+                <span class="nm">ida y vuelta del after<span class="sub">Transporte · Apps · Mercado Pago</span></span>
+                <span class="v">28.457</span>
+              </div>
+              <div class="mv">
+                <span class="nm">bills must be paid<span class="sub">Apuestas · Timba</span></span>
+                <span class="v">4.500</span>
+              </div>
+
+              <div class="day"><span>Jueves 30</span><span class="st">27.300</span></div>
+              <div class="mv">
+                <span class="nm">didi vuelta a3<span class="sub">Transporte · Apps</span></span>
+                <span class="v">10.600</span>
+              </div>
+              <div class="mv">
+                <span class="nm">carrot cake a3<span class="sub">Comida · Postres · Efectivo</span></span>
+                <span class="v">5.700</span>
+              </div>
+              <div class="mv">
+                <span class="nm">didi ida A3<span class="sub">Transporte · Apps</span></span>
+                <span class="v">11.000</span>
+              </div>
+
+              <div class="day"><span>Miércoles 29</span><span class="st">22.900</span></div>
+              <div class="mv">
+                <span class="nm">ciabatton<span class="sub">Comida · Merienda</span></span>
+                <span class="v">8.200</span>
+              </div>
+              <div class="mv">
+                <span class="nm">didi a cormls<span class="sub">Transporte · Apps</span></span>
+                <span class="v">14.700</span>
+              </div>
+
+              <div class="day"><span>Domingo 26</span><span class="st">10.357</span></div>
+              <div class="mv">
+                <span class="nm">super merienda bren<span class="sub">Supermercado · Crédito</span></span>
+                <span class="v">10.357</span>
+              </div>
+
+              <div class="day"><span>Sábado 25</span><span class="st">22.550</span></div>
+              <div class="mv">
+                <span class="nm">super fsjitss<span class="sub">Supermercado</span></span>
+                <span class="v">16.250</span>
+              </div>
+              <div class="mv">
+                <span class="nm">Crunchyroll <span class="rec">RECURRENTE</span><span class="sub">Suscripciones · Streaming</span></span>
+                <span class="v">6.300</span>
+              </div>
+            </div>
+
+            <button type="button" class="b-fab" aria-label="Cargar gasto">+</button>
+            <div class="tabs">
+              <button type="button" aria-current="page">Movimientos</button>
+              <button type="button">Análisis</button>
+              <button type="button">Recurrentes</button>
+              <button type="button">Deudas</button>
+            </div>
+          </div>
+        </div>
+        <p class="caption">B · Instrumento</p>
+      </div>
+    </section>
+
+    <!-- =============== C =============== -->
+    <section class="dir">
+      <div>
+        <span class="tag">Dirección C</span>
+        <h2>Bloques</h2>
+        <p class="kicker">color como código · tipografía negra · sin adornos</p>
+        <p class="thesis">
+          El color hace el trabajo. Cada categoría tiene el suyo y aparece como una barra maciza
+          al costado del movimiento, así reconocés de qué se trata antes de terminar de leerlo:
+          con la lista como protagonista, el color deja de ser decoración y se vuelve el índice de
+          la pantalla. Tipografía negra y gorda, cero sombras, cero esquinas redondas, cero
+          degradados.
+        </p>
+
+        <dl class="specs">
+          <div class="spec-row">
+            <dt>Paleta</dt>
+            <dd class="sw">
+              <span><i style="background:#F4F4EE"></i>F4F4EE</span>
+              <span><i style="background:#111111"></i>111111</span>
+              <span><i style="background:#DD5B33"></i>DD5B33</span>
+              <span><i style="background:#2F5AC8"></i>2F5AC8</span>
+              <span><i style="background:#9E3F96"></i>9E3F96</span>
+              <span><i style="background:#3B8A5A"></i>3B8A5A</span>
+              <span><i style="background:#C08A1E"></i>C08A1E</span>
+            </dd>
+          </div>
+          <div class="spec-row">
+            <dt>Tipografía</dt>
+            <dd class="typespec">
+              Total del mes — sans black, 30px, tracking −.025em<br>
+              Movimientos — sans semibold, 12,5px<br>
+              Días y pestañas — versalitas bold, tracking .12em
+            </dd>
+          </div>
+          <div class="spec-row">
+            <dt>Veredicto</dt>
+            <dd class="verdict">
+              <p class="win"><b>Gana</b> Velocidad de lectura. A los tres días asociás naranja con Comida y azul con Transporte, y escaneás el mes sin leer una sola etiqueta.</p>
+              <p class="risk"><b>Arriesga</b> Con diecisiete categorías el sistema de color se puede ir de las manos. Hay que fijar la paleta de entrada y prohibirse agregar colores a demanda.</p>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="stage">
+        <div class="device">
+          <div class="screen c">
+
+            <div class="c-hd">
+              <div>
+                <span class="lbl">Gastado en julio</span>
+                <span class="amt-mes">$899.007</span>
+                <span class="sub-mes"><b>28% menos que junio</b> · 51 mov.</span>
+              </div>
+              <div class="c-mo">
+                <span class="m">jul 2026</span>
+                <span class="nav">
+                  <button type="button" aria-label="Mes anterior">&lt;</button>
+                  <button type="button" aria-label="Mes siguiente">&gt;</button>
+                </span>
+              </div>
+            </div>
+
+            <div class="feed">
+              <div class="day"><span>Viernes 31</span><span class="st">32.957</span></div>
+              <div class="mv">
+                <span class="chip" style="background:#2F5AC8"></span>
+                <span class="body"><span class="nm">ida y vuelta del after</span><span class="sub">Apps · Mercado Pago</span></span>
+                <span class="v">28.457</span>
+              </div>
+              <div class="mv">
+                <span class="chip" style="background:#9E3F96"></span>
+                <span class="body"><span class="nm">bills must be paid</span><span class="sub">Apuestas · Timba</span></span>
+                <span class="v">4.500</span>
+              </div>
+
+              <div class="day"><span>Jueves 30</span><span class="st">27.300</span></div>
+              <div class="mv">
+                <span class="chip" style="background:#2F5AC8"></span>
+                <span class="body"><span class="nm">didi vuelta a3</span><span class="sub">Apps</span></span>
+                <span class="v">10.600</span>
+              </div>
+              <div class="mv">
+                <span class="chip" style="background:#DD5B33"></span>
+                <span class="body"><span class="nm">carrot cake a3</span><span class="sub">Postres · Efectivo</span></span>
+                <span class="v">5.700</span>
+              </div>
+              <div class="mv">
+                <span class="chip" style="background:#2F5AC8"></span>
+                <span class="body"><span class="nm">didi ida A3</span><span class="sub">Apps</span></span>
+                <span class="v">11.000</span>
+              </div>
+
+              <div class="day"><span>Miércoles 29</span><span class="st">22.900</span></div>
+              <div class="mv">
+                <span class="chip" style="background:#DD5B33"></span>
+                <span class="body"><span class="nm">ciabatton</span><span class="sub">Merienda</span></span>
+                <span class="v">8.200</span>
+              </div>
+              <div class="mv">
+                <span class="chip" style="background:#2F5AC8"></span>
+                <span class="body"><span class="nm">didi a cormls</span><span class="sub">Apps</span></span>
+                <span class="v">14.700</span>
+              </div>
+
+              <div class="day"><span>Domingo 26</span><span class="st">10.357</span></div>
+              <div class="mv">
+                <span class="chip" style="background:#C08A1E"></span>
+                <span class="body"><span class="nm">super merienda bren</span><span class="sub">Supermercado · Crédito</span></span>
+                <span class="v">10.357</span>
+              </div>
+
+              <div class="day"><span>Sábado 25</span><span class="st">22.550</span></div>
+              <div class="mv">
+                <span class="chip" style="background:#C08A1E"></span>
+                <span class="body"><span class="nm">super fsjitss</span><span class="sub">Supermercado</span></span>
+                <span class="v">16.250</span>
+              </div>
+              <div class="mv">
+                <span class="chip" style="background:#6C6C64"></span>
+                <span class="body"><span class="nm">Crunchyroll <span class="badge">recurrente</span></span><span class="sub">Streaming</span></span>
+                <span class="v">6.300</span>
+              </div>
+            </div>
+
+            <button type="button" class="c-add">Cargar gasto</button>
+            <div class="tabs">
+              <button type="button" aria-current="page">Movim.</button>
+              <button type="button">Análisis</button>
+              <button type="button">Recurr.</button>
+              <button type="button">Deudas</button>
+            </div>
+          </div>
+        </div>
+        <p class="caption">C · Bloques</p>
+      </div>
+    </section>
+
+    <section class="structure">
+      <h2>Dónde vive el resto</h2>
+      <p>
+        Sacar las categorías de la pantalla principal obliga a definir las cuatro pestañas de una
+        vez, así la estructura no cambia con cada iteración. Las que todavía no existen muestran
+        un estado vacío honesto en lugar de esconderse.
+      </p>
+      <div class="tabmap">
+        <div>
+          <span class="t">Movimientos</span>
+          <span>Total del mes arriba a la izquierda, selector de mes, lista por día con subtotal, alta de gasto.</span>
+          <span class="it">iteración 1</span>
+        </div>
+        <div>
+          <span class="t">Análisis</span>
+          <span>Gasto por categoría y subcategoría, por mes y por año, comparativas. Acá va el desglose que saqué de la pantalla principal.</span>
+          <span class="it">iteración 4</span>
+        </div>
+        <div>
+          <span class="t">Recurrentes</span>
+          <span>Suscripciones y cuotas activas, qué se viene este mes, alta y baja de series.</span>
+          <span class="it">iteración 3</span>
+        </div>
+        <div>
+          <span class="t">Deudas</span>
+          <span>Quién te debe y a quién le debés, saldos por persona, import de Splitwise.</span>
+          <span class="it">iteración 5</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing">
+      <h2>Cómo sigue</h2>
+      <ol class="steps">
+        <li><b>Elegís una.</b> O me decís qué te gusta de cada una y las cruzo: la densidad de A con el color de C es una combinación que funciona, por ejemplo.</li>
+        <li><b>Armo el «Usura Design System» en Claude Design.</b> Paleta, tipografía, escalas de espaciado y los componentes que la app necesita de verdad: fila de movimiento, encabezado de día, selector de categoría, teclado de monto, chip de etiqueta, selector de mes.</li>
+        <li><b>Con el sistema aprobado arranca la iteración 1.</b> Alta de gasto, total del mes, lista por día y offline-first funcionando. Ahí ya la podés empezar a usar en serio y dejar Meow.</li>
+      </ol>
+
+      <p class="note">
+        Ninguna de las tres es un boceto que después «se mejora». La que elijas se convierte en el
+        sistema del que sale toda la app, así que conviene mirarlas por lo que van a costar
+        mantener en la pestaña de Análisis, no solo por cuál se ve mejor hoy.
+      </p>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>Usura · direcciones visuales · rev. 2 · 11 ago 2026</span>
+    <span>Datos: julio 2026, movimientos y subtotales reales del CSV de Meow.</span>
+  </footer>
+
+</div>

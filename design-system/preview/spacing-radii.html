@@ -1,0 +1,66 @@
+<!-- @dsCard group="Foundations" -->
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Espaciado, radios y toque</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:24px; background:var(--bg); font-family:var(--font-ui); }
+  h3 { font:var(--w-semi) 12px/1 var(--font-ui); letter-spacing:.14em; text-transform:uppercase;
+       color:var(--text-3); margin:26px 0 12px; }
+  h3:first-child { margin-top:0; }
+  .sp { display:grid; gap:5px; }
+  .sp > div { display:flex; align-items:center; gap:12px; }
+  .sp i { display:block; height:12px; background:var(--amber); border-radius:var(--r-xs); }
+  .sp span { font:11px/1 var(--font-figure); color:var(--text-3); }
+  .radii { display:flex; gap:14px; flex-wrap:wrap; }
+  .radii div { text-align:center; }
+  .radii i { display:block; width:66px; height:52px; background:var(--surface-2); border:1px solid var(--rule-strong); margin-bottom:6px; }
+  .radii span { font:10.5px/1.4 var(--font-figure); color:var(--text-3); }
+  .radii b { display:block; font:var(--w-semi) 11px/1.4 var(--font-ui); color:var(--text); }
+  .touch { display:grid; gap:8px; max-width:320px; }
+  .touch > div { display:flex; align-items:center; justify-content:space-between; padding:0 12px;
+                 background:var(--surface); border:1px solid var(--rule); border-radius:var(--r-sm);
+                 font:11.5px/1 var(--font-ui); color:var(--text-2); }
+  .note { margin:18px 0 0; padding:12px 14px; background:var(--info-soft); border-left:2px solid var(--amber);
+          font:13px/1.55 var(--font-ui); color:var(--text-2); }
+</style></head>
+<body>
+
+  <h3>Espaciado — grilla de 4</h3>
+  <div class="sp">
+    <div><i style="width:2px"></i><span>s-1 · 2</span></div>
+    <div><i style="width:4px"></i><span>s-2 · 4</span></div>
+    <div><i style="width:6px"></i><span>s-3 · 6</span></div>
+    <div><i style="width:8px"></i><span>s-4 · 8 — separación dentro de una fila</span></div>
+    <div><i style="width:12px"></i><span>s-5 · 12</span></div>
+    <div><i style="width:16px"></i><span>s-6 · 16 — padding de pantalla</span></div>
+    <div><i style="width:20px"></i><span>s-7 · 20</span></div>
+    <div><i style="width:24px"></i><span>s-8 · 24 — entre bloques</span></div>
+    <div><i style="width:32px"></i><span>s-9 · 32</span></div>
+    <div><i style="width:40px"></i><span>s-10 · 40</span></div>
+    <div><i style="width:48px"></i><span>s-11 · 48</span></div>
+  </div>
+
+  <h3>Radios — casi rectos, a propósito</h3>
+  <div class="radii">
+    <div><i style="border-radius:2px"></i><b>r-xs</b><span>2 · detalles</span></div>
+    <div><i style="border-radius:3px"></i><b>r-sm</b><span>3 · controles</span></div>
+    <div><i style="border-radius:6px"></i><b>r-md</b><span>6 · tarjetas, sheet</span></div>
+    <div><i style="border-radius:10px"></i><b>r-lg</b><span>10 · contenedores</span></div>
+    <div><i style="border-radius:999px;width:52px"></i><b>r-pill</b><span>999 · solo chips</span></div>
+  </div>
+
+  <h3>Alturas de toque</h3>
+  <div class="touch">
+    <div style="height:46px"><span>fila de movimiento</span><span class="u-figure-s">46</span></div>
+    <div style="height:44px"><span>mínimo de toque</span><span class="u-figure-s">44</span></div>
+    <div style="height:40px"><span>control (input, selector de mes)</span><span class="u-figure-s">40</span></div>
+    <div style="height:54px"><span>barra de pestañas</span><span class="u-figure-s">54</span></div>
+    <div style="height:52px;width:52px;border-radius:999px;justify-content:center;background:var(--amber);color:var(--amber-ink)"><span style="font-weight:600">FAB 52</span></div>
+  </div>
+
+  <p class="note">
+    La fila mide <b>46px</b> y no se comprime para meter una fila más en pantalla. Es la superficie
+    que vas a tocar mil veces para editar un gasto mal cargado.
+  </p>
+
+</body></html>

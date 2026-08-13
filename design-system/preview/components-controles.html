@@ -1,0 +1,103 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Botones, campos y chips</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:24px; background:var(--bg); font-family:var(--font-ui); }
+  h3 { font:var(--w-semi) 12px/1 var(--font-ui); letter-spacing:.14em; text-transform:uppercase;
+       color:var(--text-3); margin:26px 0 12px; }
+  h3:first-child { margin-top:0; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .stack { display:grid; gap:10px; max-width:330px; }
+
+  /* botones */
+  .btn { height:var(--h-control); padding:0 18px; border-radius:var(--r-sm); cursor:pointer; border:1px solid transparent;
+         font:var(--w-semi) 13px/1 var(--font-ui); letter-spacing:.02em;
+         transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+  .btn-1 { background:var(--amber); color:var(--amber-ink); }
+  .btn-1:hover { background:var(--amber-hover); }
+  .btn-1:active { background:var(--amber-press); }
+  .btn-2 { background:var(--surface-2); color:var(--text); border-color:var(--rule-strong); }
+  .btn-2:hover { border-color:var(--text-3); }
+  .btn-3 { background:none; color:var(--text-2); }
+  .btn-3:hover { color:var(--text); background:var(--surface); }
+  .btn-d { background:none; color:var(--negative); border-color:var(--rule-strong); }
+  .btn-d:hover { background:var(--negative); color:var(--negative-ink); border-color:var(--negative); }
+  .btn:disabled { opacity:.35; cursor:default; }
+
+  /* campos */
+  label.f { display:grid; gap:5px; }
+  label.f > span { font:var(--t-micro)/1.3 var(--font-ui); text-transform:uppercase; letter-spacing:var(--tr-micro); color:var(--text-3); }
+  .inp { height:var(--h-control); background:var(--surface-2); border:1px solid var(--rule-strong);
+         border-radius:var(--r-sm); color:var(--text); padding:0 12px; width:100%;
+         font:14px/1 var(--font-ui); }
+  .inp::placeholder { color:var(--text-3); }
+  .inp:focus { outline:2px solid var(--amber); outline-offset:1px; border-color:var(--amber); }
+  .inp.err { border-color:var(--negative); }
+  .msg { font:11.5px/1.4 var(--font-ui); color:var(--negative); }
+
+  /* toggle moneda */
+  .seg { display:inline-flex; background:var(--surface-2); border:1px solid var(--rule-strong);
+         border-radius:var(--r-sm); padding:2px; gap:2px; }
+  .seg button { border:0; background:none; cursor:pointer; height:30px; padding:0 14px; border-radius:var(--r-xs);
+                font:var(--w-semi) 12.5px/1 var(--font-ui); color:var(--text-3); }
+  .seg button[aria-pressed="true"] { background:var(--amber); color:var(--amber-ink); }
+  .seg button:not([aria-pressed="true"]):hover { color:var(--text); }
+
+  /* chips de etiqueta */
+  .chips { display:flex; gap:7px; flex-wrap:wrap; }
+  .chip { display:inline-flex; align-items:center; gap:6px; height:26px; padding:0 11px;
+          border-radius:var(--r-pill); background:var(--surface-2); border:1px solid var(--rule-strong);
+          font:12px/1 var(--font-ui); color:var(--text-2); cursor:pointer; }
+  .chip:hover { border-color:var(--text-3); color:var(--text); }
+  .chip[aria-pressed="true"] { background:var(--amber-soft); border-color:var(--amber); color:var(--amber); }
+  .chip.add { border-style:dashed; color:var(--text-3); }
+  .cap { font:11.5px/1.5 var(--font-ui); color:var(--text-3); margin:12px 0 0; max-width:56ch; }
+</style></head>
+<body>
+
+  <h3>Botones</h3>
+  <div class="row">
+    <button class="btn btn-1">Cargar gasto</button>
+    <button class="btn btn-2">Guardar</button>
+    <button class="btn btn-3">Cancelar</button>
+    <button class="btn btn-d">Borrar movimiento</button>
+    <button class="btn btn-1" disabled>Guardar</button>
+  </div>
+  <p class="cap">
+    Verbo + objeto, y la confirmación usa el mismo verbo en pasado: <b>Guardar</b> → «Guardado».
+    El primario es ámbar macizo y hay <b>uno solo por pantalla</b>.
+  </p>
+
+  <h3>Campos</h3>
+  <div class="stack">
+    <label class="f"><span>Concepto</span><input class="inp" placeholder="didi a la ofi"></label>
+    <label class="f"><span>Monto</span><input class="inp u-figure" style="font-size:15px" value="12.800"></label>
+    <label class="f"><span>Monto</span><input class="inp err u-figure" style="font-size:15px" value="0">
+      <span class="msg">El monto tiene que ser mayor que cero.</span></label>
+  </div>
+
+  <h3>Moneda</h3>
+  <div class="row">
+    <span class="seg">
+      <button type="button" aria-pressed="true">$ ARS</button>
+      <button type="button" aria-pressed="false">US$</button>
+    </span>
+    <span class="u-label">Al pasar a US$ aparece la cotización del día y su fecha.</span>
+  </div>
+
+  <h3>Etiquetas</h3>
+  <div class="chips">
+    <button class="chip" aria-pressed="true">tati</button>
+    <button class="chip" aria-pressed="false">maxi</button>
+    <button class="chip" aria-pressed="false">ian</button>
+    <button class="chip" aria-pressed="false">viaje-junko</button>
+    <button class="chip" aria-pressed="false">gasto-grande</button>
+    <button class="chip add">+ etiqueta</button>
+  </div>
+  <p class="cap">
+    Único lugar del sistema con radio completo: un chip se lee como chip. Se ordenan por
+    frecuencia de uso, no alfabéticamente — «tati» y «maxi» tienen que estar primeros.
+  </p>
+
+</body></html>

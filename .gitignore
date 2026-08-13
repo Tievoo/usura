@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dev-dist/
+
+# Las claves del proyecto. La publishable es pública por diseño, pero el archivo
+# no va al repo igual: cada quien apunta al suyo.
+.env.local
+.env*.local
+
+*.log
+.DS_Store
+.vite/

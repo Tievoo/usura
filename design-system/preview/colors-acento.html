@@ -1,0 +1,54 @@
+<!-- @dsCard group="Colors" -->
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Acento y semánticos</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:24px; background:var(--bg); font-family:var(--font-ui); }
+  h3 { font:var(--w-semi) 12px/1 var(--font-ui); letter-spacing:.14em; text-transform:uppercase;
+       color:var(--text-3); margin:28px 0 12px; }
+  h3:first-child { margin-top:0; }
+  .grid { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; }
+  .sw { display:flex; flex-direction:column; gap:6px; }
+  .chip { height:60px; border-radius:var(--r-md); border:1px solid var(--rule); }
+  .n { font:var(--w-semi) 11.5px/1.2 var(--font-ui); color:var(--text); }
+  .h { font:11px/1 var(--font-figure); color:var(--text-3); }
+  .rule-box { background:var(--surface); border:1px solid var(--rule); border-radius:var(--r-md); padding:16px; display:grid; gap:12px; }
+  .row { display:flex; justify-content:space-between; align-items:center; font:12.5px/1.3 var(--font-ui); color:var(--text); }
+  .row .m { font-family:var(--font-figure); font-size:var(--t-figure); font-variant-numeric:tabular-nums; }
+  .warn { margin:10px 0 0; padding:12px 14px; background:var(--info-soft); border-left:2px solid var(--amber);
+          font:13px/1.5 var(--font-ui); color:var(--text-2); border-radius:0 var(--r-sm) var(--r-sm) 0; }
+</style></head>
+<body>
+
+  <h3>Ámbar — el único acento del sistema</h3>
+  <div class="grid">
+    <div class="sw"><div class="chip" style="background:var(--amber)"></div><div class="n">amber</div><div class="h">#DDA544</div></div>
+    <div class="sw"><div class="chip" style="background:var(--amber-hover)"></div><div class="n">hover</div><div class="h">#E9B45B</div></div>
+    <div class="sw"><div class="chip" style="background:var(--amber-press)"></div><div class="n">press</div><div class="h">#C08F33</div></div>
+    <div class="sw"><div class="chip" style="background:var(--amber-ink)"></div><div class="n">ink</div><div class="h">#1B1509</div></div>
+    <div class="sw"><div class="chip" style="background:var(--amber-soft)"></div><div class="n">soft</div><div class="h">#2A2116</div></div>
+  </div>
+
+  <p class="warn">
+    El ámbar se usa en <b>dos</b> lugares: el monto de un gasto y la acción primaria.
+    Si aparece en un tercero, deja de significar algo.
+  </p>
+
+  <h3>Semánticos — nunca decorativos</h3>
+  <div class="grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="sw"><div class="chip" style="background:var(--positive)"></div><div class="n">positive</div><div class="h">#5FA391</div></div>
+    <div class="sw"><div class="chip" style="background:var(--negative)"></div><div class="n">negative</div><div class="h">#C25B4A</div></div>
+    <div class="sw"><div class="chip" style="background:var(--pendiente)"></div><div class="n">pendiente</div><div class="h">#8E7B57</div></div>
+    <div class="sw"><div class="chip" style="background:var(--info-soft)"></div><div class="n">info-soft</div><div class="h">#22201C</div></div>
+  </div>
+
+  <h3>Qué significa cada uno, en contexto</h3>
+  <div class="rule-box">
+    <div class="row"><span>didi a la ofi · gasto</span><span class="m u-gasto">12.800</span></div>
+    <div class="row"><span>me paga tahichi · ingreso</span><span class="m u-ingreso">+5.500</span></div>
+    <div class="row"><span>maxi te debe</span><span class="m u-ingreso">+8.588</span></div>
+    <div class="row"><span>le debés a fabro</span><span class="m" style="color:var(--negative)">−10.000</span></div>
+    <div class="row"><span>US$ 15 × 1.500 · cotización del sábado</span><span class="m u-estimado">22.500</span></div>
+  </div>
+
+</body></html>

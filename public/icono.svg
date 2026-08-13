@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Usura">
+  <rect width="512" height="512" fill="#141210"/>
+  <!-- Tres barras de medición: la lectura de un instrumento, no un símbolo de plata. -->
+  <rect x="112" y="300" width="52" height="100" fill="#5FA391"/>
+  <rect x="196" y="216" width="52" height="184" fill="#8B8177"/>
+  <rect x="280" y="132" width="52" height="268" fill="#DDA544"/>
+  <rect x="112" y="416" width="288" height="10" fill="#423A32"/>
+  <rect x="364" y="132" width="36" height="10" fill="#DDA544"/>
+</svg>

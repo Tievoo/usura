@@ -1,0 +1,158 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Alta de gasto</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:24px; background:var(--bg); font-family:var(--font-ui); }
+  h3 { font:var(--w-semi) 12px/1 var(--font-ui); letter-spacing:.14em; text-transform:uppercase;
+       color:var(--text-3); margin:0 0 6px; }
+  .cap { font:11.5px/1.5 var(--font-ui); color:var(--text-3); margin:0 0 16px; max-width:58ch; }
+  .cap b { color:var(--text-2); }
+  .wrap { display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; }
+
+  .sheet { width:340px; background:var(--surface-3); border:1px solid var(--rule-strong);
+           border-radius:var(--r-md) var(--r-md) 0 0; box-shadow:var(--sh-sheet); overflow:hidden; }
+  .grab { height:22px; display:flex; align-items:center; justify-content:center; }
+  .grab i { width:34px; height:3px; border-radius:999px; background:var(--rule-strong); display:block; }
+
+  /* monto */
+  .amount { padding:4px var(--pad-screen) 14px; display:flex; justify-content:space-between; align-items:flex-end; gap:12px; }
+  .amount .v { color:var(--text); }
+  .amount .v small { font-size:19px; color:var(--text-3); margin-right:3px; }
+  .amount .caret { color:var(--amber); }
+  .seg { display:inline-flex; background:var(--surface-2); border:1px solid var(--rule-strong);
+         border-radius:var(--r-sm); padding:2px; gap:2px; flex:none; }
+  .seg button { border:0; background:none; cursor:pointer; height:26px; padding:0 10px; border-radius:var(--r-xs);
+                font:var(--w-semi) 11.5px/1 var(--font-ui); color:var(--text-3); }
+  .seg button[aria-pressed="true"] { background:var(--amber); color:var(--amber-ink); }
+
+  /* concepto */
+  .concepto { padding:0 var(--pad-screen) 12px; }
+  .concepto input { width:100%; height:38px; background:none; border:0; border-bottom:1px solid var(--rule-strong);
+                    color:var(--text); font:14px/1 var(--font-ui); padding:0; }
+  .concepto input::placeholder { color:var(--text-3); }
+  .concepto input:focus { outline:0; border-bottom-color:var(--amber); }
+
+  /* categorías */
+  .sec { padding:0 var(--pad-screen) 10px; }
+  .sec > .u-micro { display:block; margin-bottom:8px; }
+  .cats { display:flex; gap:6px; flex-wrap:wrap; }
+  .cat { display:inline-flex; align-items:center; gap:7px; height:32px; padding:0 11px; cursor:pointer;
+         background:var(--surface-2); border:1px solid var(--rule); border-radius:var(--r-sm);
+         font:12.5px/1 var(--font-ui); color:var(--text-2); }
+  .cat i { width:8px; height:8px; border-radius:var(--r-xs); flex:none; }
+  .cat:hover { border-color:var(--text-3); color:var(--text); }
+  .cat[aria-pressed="true"] { background:var(--amber-soft); border-color:var(--amber); color:var(--text); }
+  .cat.more { border-style:dashed; color:var(--text-3); }
+
+  /* meta */
+  .meta { display:flex; gap:6px; padding:2px var(--pad-screen) 12px; flex-wrap:wrap; }
+  .pill { height:28px; padding:0 11px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+          background:none; border:1px solid var(--rule-strong); border-radius:var(--r-pill);
+          font:11.5px/1 var(--font-ui); color:var(--text-2); }
+  .pill:hover { color:var(--text); border-color:var(--text-3); }
+
+  /* teclado */
+  .pad { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--rule);
+         border-top:1px solid var(--rule); }
+  .pad button { height:52px; border:0; background:var(--surface-3); cursor:pointer; color:var(--text);
+                font-family:var(--font-figure); font-size:19px; font-variant-numeric:tabular-nums;
+                transition:background var(--dur-fast) var(--ease); }
+  .pad button:hover { background:var(--surface-2); }
+  .pad button:active { background:var(--amber-soft); }
+  .pad button.fn { color:var(--text-3); font-family:var(--font-ui); font-size:13px; }
+  .pad button.ok { background:var(--amber); color:var(--amber-ink); font-family:var(--font-ui);
+                   font-size:13px; font-weight:600; grid-row:span 2; height:auto; }
+  .pad button.ok:hover { background:var(--amber-hover); }
+
+  .flow { max-width:300px; display:grid; gap:0; }
+  .flow > div { display:grid; grid-template-columns:24px minmax(0,1fr); gap:12px; padding:12px 0;
+                border-top:1px solid var(--rule); font:12px/1.5 var(--font-ui); color:var(--text-3); }
+  .flow > div:first-child { border-top:0; }
+  .flow .n { font-family:var(--font-figure); font-size:11px; color:var(--amber); }
+  .flow b { color:var(--text-2); font-weight:500; }
+</style></head>
+<body>
+  <h3>Sheet de alta de gasto</h3>
+  <p class="cap">
+    La pantalla más importante de la app. Teclado propio en vez del del sistema: entra completa
+    sin que el teclado del OS tape las categorías, y el monto siempre se ve mientras lo tipeás.
+  </p>
+
+  <div class="wrap">
+
+    <div class="sheet">
+      <div class="grab"><i></i></div>
+
+      <div class="amount">
+        <span class="u-readout-xl v"><small>$</small>12.800<span class="caret">|</span></span>
+        <span class="seg">
+          <button type="button" aria-pressed="true">$</button>
+          <button type="button" aria-pressed="false">US$</button>
+        </span>
+      </div>
+
+      <div class="concepto">
+        <input placeholder="Concepto — opcional" value="didi a la ofi">
+      </div>
+
+      <div class="sec">
+        <span class="u-micro">Categoría · las más usadas primero</span>
+        <div class="cats">
+          <button class="cat" aria-pressed="true"><i style="background:var(--cat-transporte)"></i>Transporte</button>
+          <button class="cat"><i style="background:var(--cat-comida)"></i>Comida</button>
+          <button class="cat"><i style="background:var(--cat-super)"></i>Super</button>
+          <button class="cat"><i style="background:var(--cat-entretenim)"></i>Entretenim.</button>
+          <button class="cat"><i style="background:var(--cat-deporte)"></i>Deporte</button>
+          <button class="cat more">Ver las 17</button>
+        </div>
+      </div>
+
+      <div class="sec">
+        <span class="u-micro">Subcategoría</span>
+        <div class="cats">
+          <button class="cat" aria-pressed="true">Apps</button>
+          <button class="cat">Nafta</button>
+          <button class="cat">Estacionamiento</button>
+          <button class="cat">Público</button>
+        </div>
+      </div>
+
+      <div class="meta">
+        <button class="pill">Hoy · 11 ago</button>
+        <button class="pill">Mercado Pago</button>
+        <button class="pill">+ etiqueta</button>
+        <button class="pill">Compartido</button>
+      </div>
+
+      <div class="pad">
+        <button type="button">1</button><button type="button">2</button><button type="button">3</button>
+        <button type="button" class="ok">Guardar</button>
+        <button type="button">4</button><button type="button">5</button><button type="button">6</button>
+        <button type="button">7</button><button type="button">8</button><button type="button">9</button>
+        <button type="button" class="fn">←</button>
+        <button type="button" class="fn">000</button><button type="button">0</button><button type="button" class="fn">,</button>
+        <button type="button" class="fn">Recurrente</button>
+      </div>
+    </div>
+
+    <div>
+      <span class="u-micro" style="display:block;margin-bottom:10px">El camino corto</span>
+      <div class="flow">
+        <div><span class="n">01</span><span><b>FAB.</b> El sheet abre con la categoría y el medio de pago de tu último gasto ya elegidos, y la fecha en hoy.</span></div>
+        <div><span class="n">02</span><span><b>Tipeás el monto.</b> Guardar se habilita en cuanto es mayor que cero.</span></div>
+        <div><span class="n">03</span><span><b>Guardar.</b> Con eso ya está cargado. Concepto, subcategoría y etiquetas son opcionales.</span></div>
+      </div>
+      <p class="cap" style="margin-top:14px">
+        Si la categoría heredada no sirve, es un toque más. Los cinco chips de arriba cubren
+        el <b>85% de tus gastos</b> según los dos años y medio del CSV: Comida, Transporte,
+        Entretenimiento, Supermercado y Deporte.
+      </p>
+      <p class="cap">
+        <b>Guardar no espera nada.</b> Cierra el sheet, el movimiento aparece en la lista, y si no
+        hay señal o no se pudo traer la cotización queda con su marcador y se resuelve solo.
+      </p>
+    </div>
+
+  </div>
+</body></html>

@@ -1,0 +1,77 @@
+<!-- @dsCard group="Colors" -->
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Colores de categoría</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:24px; background:var(--bg); font-family:var(--font-ui); }
+  h3 { font:var(--w-semi) 12px/1 var(--font-ui); letter-spacing:.14em; text-transform:uppercase;
+       color:var(--text-3); margin:28px 0 12px; }
+  h3:first-child { margin-top:0; }
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px 14px; }
+  .cat { display:flex; align-items:center; gap:9px; }
+  .cat i { width:22px; height:22px; flex:none; border-radius:var(--r-xs); }
+  .cat .n { font:12.5px/1.2 var(--font-ui); color:var(--text); }
+  .cat .h { font:10px/1 var(--font-figure); color:var(--text-3); }
+  .sub { background:var(--surface); border:1px solid var(--rule); border-radius:var(--r-md); padding:15px; }
+  .ramp { display:flex; gap:0; height:34px; border-radius:var(--r-sm); overflow:hidden; margin-bottom:8px; }
+  .ramp span { flex:1; }
+  .caption { font:11.5px/1.5 var(--font-ui); color:var(--text-3); margin:0; }
+  .warn { margin:14px 0 0; padding:12px 14px; background:var(--info-soft); border-left:2px solid var(--amber);
+          font:13px/1.5 var(--font-ui); color:var(--text-2); }
+</style></head>
+<body>
+
+  <h3>17 categorías de gasto</h3>
+  <div class="grid">
+    <div class="cat"><i style="background:var(--cat-comida)"></i><span><span class="n">Comida</span><br><span class="h">#E0864A</span></span></div>
+    <div class="cat"><i style="background:var(--cat-super)"></i><span><span class="n">Supermercado</span><br><span class="h">#C9A227</span></span></div>
+    <div class="cat"><i style="background:var(--cat-bebidas)"></i><span><span class="n">Bebidas</span><br><span class="h">#93B84C</span></span></div>
+    <div class="cat"><i style="background:var(--cat-transporte)"></i><span><span class="n">Transporte</span><br><span class="h">#5A93D6</span></span></div>
+    <div class="cat"><i style="background:var(--cat-apuestas)"></i><span><span class="n">Apuestas</span><br><span class="h">#B85C8A</span></span></div>
+    <div class="cat"><i style="background:var(--cat-entretenim)"></i><span><span class="n">Entretenimiento</span><br><span class="h">#A97BD6</span></span></div>
+    <div class="cat"><i style="background:var(--cat-deporte)"></i><span><span class="n">Deporte</span><br><span class="h">#4FA97C</span></span></div>
+    <div class="cat"><i style="background:var(--cat-salud)"></i><span><span class="n">Salud</span><br><span class="h">#4FB3B3</span></span></div>
+    <div class="cat"><i style="background:var(--cat-suscrip)"></i><span><span class="n">Suscripciones</span><br><span class="h">#7B8BD6</span></span></div>
+    <div class="cat"><i style="background:var(--cat-tecnologia)"></i><span><span class="n">Tecnología</span><br><span class="h">#8A9AA6</span></span></div>
+    <div class="cat"><i style="background:var(--cat-cuidado)"></i><span><span class="n">Cuidado personal</span><br><span class="h">#D69AAE</span></span></div>
+    <div class="cat"><i style="background:var(--cat-ropa)"></i><span><span class="n">Ropa y accesorios</span><br><span class="h">#D6B36A</span></span></div>
+    <div class="cat"><i style="background:var(--cat-regalos)"></i><span><span class="n">Regalos</span><br><span class="h">#D2685C</span></span></div>
+    <div class="cat"><i style="background:var(--cat-hogar)"></i><span><span class="n">Hogar y servicios</span><br><span class="h">#6E9E8E</span></span></div>
+    <div class="cat"><i style="background:var(--cat-impuestos)"></i><span><span class="n">Impuestos y trámites</span><br><span class="h">#9A8878</span></span></div>
+    <div class="cat"><i style="background:var(--cat-viajes)"></i><span><span class="n">Viajes</span><br><span class="h">#57A9C4</span></span></div>
+    <div class="cat"><i style="background:var(--cat-otros)"></i><span><span class="n">Otros</span><br><span class="h">#7A7169</span></span></div>
+  </div>
+
+  <h3>Subcategorías: heredan el hue, varían la luminosidad</h3>
+  <div class="sub">
+    <div class="ramp">
+      <span style="background:#F0A87A"></span>
+      <span style="background:#E89760"></span>
+      <span style="background:#E0864A"></span>
+      <span style="background:#C36F3A"></span>
+      <span style="background:#A25A2E"></span>
+    </div>
+    <p class="caption">
+      Comida &gt; Restaurante · Delivery · Fast food · Merienda · Postres.
+      Con 17 padres y unas 60 subcategorías, darle color propio a cada hija hace
+      un sistema ingobernable a los dos meses.
+    </p>
+  </div>
+
+  <h3>6 categorías de ingreso — familia del positivo</h3>
+  <div class="grid">
+    <div class="cat"><i style="background:var(--inc-trabajo)"></i><span class="n">Trabajo</span></div>
+    <div class="cat"><i style="background:var(--inc-usd)"></i><span class="n">Venta de USD</span></div>
+    <div class="cat"><i style="background:var(--inc-apuestas)"></i><span class="n">Apuestas</span></div>
+    <div class="cat"><i style="background:var(--inc-inversiones)"></i><span class="n">Inversiones</span></div>
+    <div class="cat"><i style="background:var(--inc-reintegros)"></i><span class="n">Reintegros</span></div>
+    <div class="cat"><i style="background:var(--inc-otros)"></i><span class="n">Otros</span></div>
+  </div>
+
+  <p class="warn">
+    <b>Salud (#4FB3B3) y Viajes (#57A9C4) son vecinos incómodos.</b> Casi nunca se ven juntos
+    porque Viajes tiene muy poco volumen en los datos, pero si aparecen adyacentes en Análisis
+    hay que separar uno de los dos.
+  </p>
+
+</body></html>
