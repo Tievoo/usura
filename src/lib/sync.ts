@@ -1,7 +1,7 @@
-import { supabase, type FilaMovimiento } from './supabase'
-import { db, escribirMeta, leerMeta } from './db'
-import { aNumeric, desdeNumeric } from './plata'
-import type { FxTipo, MedioPago, Moneda, Movimiento, Origen, Tipo } from './tipos'
+import { supabase, type TransactionRow } from './supabase'
+import { db, writeMeta, readMeta } from './db'
+import { toNumeric, fromNumeric } from './money'
+import type { FxType, PaymentMethod, Currency, Transaction, Source, TransactionType } from './types'
 
 /**
  * Sincronización. Local siempre primero: la UI escribe en Dexie y sigue, y esto
@@ -12,80 +12,80 @@ import type { FxTipo, MedioPago, Moneda, Movimiento, Origen, Tipo } from './tipo
  * de la misma persona.
  */
 
-const CLAVE_ULTIMO_PULL = 'ultimoPull'
+const LAST_PULL_KEY = 'lastPull'
 
 /* ---------- mapeo ---------- */
 
-function aFila(m: Movimiento): FilaMovimiento {
+function toRow(t: Transaction): TransactionRow {
   return {
-    id: m.id,
-    user_id: m.userId,
-    tipo: m.tipo,
-    fecha: m.fecha,
-    concepto: m.concepto,
-    monto_original: aNumeric(m.montoOriginal),
-    moneda: m.moneda,
-    monto_ars: aNumeric(m.montoArs),
-    fx_valor: m.fxValor === null ? null : aNumeric(m.fxValor),
-    fx_tipo: m.fxTipo,
-    fx_fecha: m.fxFecha,
-    categoria: m.categoria,
-    subcategoria: m.subcategoria,
-    medio_pago: m.medioPago,
-    reembolso_ars: aNumeric(m.reembolsoArs),
-    notas: m.notas,
-    origen: m.origen,
-    created_at: m.createdAt,
-    updated_at: m.updatedAt,
-    deleted_at: m.deletedAt,
+    id: t.id,
+    user_id: t.userId,
+    type: t.type,
+    date: t.date,
+    description: t.description,
+    original_amount: toNumeric(t.originalAmount),
+    currency: t.currency,
+    ars_amount: toNumeric(t.arsAmount),
+    fx_rate: t.fxRate === null ? null : toNumeric(t.fxRate),
+    fx_type: t.fxType,
+    fx_date: t.fxDate,
+    category: t.category,
+    subcategory: t.subcategory,
+    payment_method: t.paymentMethod,
+    refund_ars: toNumeric(t.refundArs),
+    notes: t.notes,
+    source: t.source,
+    created_at: t.createdAt,
+    updated_at: t.updatedAt,
+    deleted_at: t.deletedAt,
   }
 }
 
-function deFila(f: FilaMovimiento): Movimiento {
+function fromRow(r: TransactionRow): Transaction {
   return {
-    id: f.id,
-    userId: f.user_id,
-    tipo: f.tipo as Tipo,
-    fecha: f.fecha,
-    concepto: f.concepto,
-    montoOriginal: desdeNumeric(f.monto_original),
-    moneda: f.moneda as Moneda,
-    montoArs: desdeNumeric(f.monto_ars),
-    fxValor: f.fx_valor === null ? null : desdeNumeric(f.fx_valor),
-    fxTipo: f.fx_tipo as FxTipo | null,
-    fxFecha: f.fx_fecha,
-    categoria: f.categoria,
-    subcategoria: f.subcategoria,
-    medioPago: f.medio_pago as MedioPago,
-    reembolsoArs: desdeNumeric(f.reembolso_ars),
-    notas: f.notas,
-    origen: f.origen as Origen,
-    createdAt: f.created_at,
-    updatedAt: f.updated_at,
-    deletedAt: f.deleted_at,
+    id: r.id,
+    userId: r.user_id,
+    type: r.type as TransactionType,
+    date: r.date,
+    description: r.description,
+    originalAmount: fromNumeric(r.original_amount),
+    currency: r.currency as Currency,
+    arsAmount: fromNumeric(r.ars_amount),
+    fxRate: r.fx_rate === null ? null : fromNumeric(r.fx_rate),
+    fxType: r.fx_type as FxType | null,
+    fxDate: r.fx_date,
+    category: r.category,
+    subcategory: r.subcategory,
+    paymentMethod: r.payment_method as PaymentMethod,
+    refundArs: fromNumeric(r.refund_ars),
+    notes: r.notes,
+    source: r.source as Source,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+    deletedAt: r.deleted_at,
     _dirty: 0,
   }
 }
 
 /* ---------- push ---------- */
 
-async function empujar(): Promise<void> {
-  const sucios = await db.movimientos.where('_dirty').equals(1).toArray()
-  if (!sucios.length) return
+async function push(): Promise<void> {
+  const dirty = await db.transactions.where('_dirty').equals(1).toArray()
+  if (!dirty.length) return
 
-  // En tandas: una lista de 1.152 movimientos importados no entra en un solo request.
-  const TANDA = 200
-  for (let i = 0; i < sucios.length; i += TANDA) {
-    const tanda = sucios.slice(i, i + TANDA)
-    const { error } = await supabase.from('movimientos').upsert(tanda.map(aFila), { onConflict: 'id' })
+  // En tandas: una lista de 1.152 transacciones importadas no entra en un solo request.
+  const BATCH = 200
+  for (let i = 0; i < dirty.length; i += BATCH) {
+    const batch = dirty.slice(i, i + BATCH)
+    const { error } = await supabase.from('transactions').upsert(batch.map(toRow), { onConflict: 'id' })
     if (error) throw new Error(error.message)
     // Solo se limpia lo que efectivamente subió; si algo se editó mientras
     // viajaba, su updatedAt cambió y vuelve a marcarse sucio en el próximo put.
-    await db.transaction('rw', db.movimientos, async () => {
-      for (const m of tanda) {
-        const actual = await db.movimientos.get(m.id)
-        if (actual && actual.updatedAt === m.updatedAt) {
-          await db.movimientos.update(m.id, { _dirty: 0 })
+    await db.transaction('rw', db.transactions, async () => {
+      for (const t of batch) {
+        const current = await db.transactions.get(t.id)
+        if (current && current.updatedAt === t.updatedAt) {
+          await db.transactions.update(t.id, { _dirty: 0 })
         }
       }
     })
@@ -94,82 +94,82 @@ async function empujar(): Promise<void> {
 
 /* ---------- pull ---------- */
 
-async function traer(): Promise<void> {
-  const desde = (await leerMeta(CLAVE_ULTIMO_PULL)) ?? '1970-01-01T00:00:00Z'
+async function pull(): Promise<void> {
+  const from = (await readMeta(LAST_PULL_KEY)) ?? '1970-01-01T00:00:00Z'
 
   const { data, error } = await supabase
-    .from('movimientos')
+    .from('transactions')
     .select('*')
-    .gt('updated_at', desde)
+    .gt('updated_at', from)
     .order('updated_at', { ascending: true })
     .limit(1000)
 
   if (error) throw new Error(error.message)
   if (!data?.length) return
 
-  const remotos = (data as FilaMovimiento[]).map(deFila)
+  const remote = (data as TransactionRow[]).map(fromRow)
 
-  await db.transaction('rw', db.movimientos, async () => {
-    for (const r of remotos) {
-      const local = await db.movimientos.get(r.id)
+  await db.transaction('rw', db.transactions, async () => {
+    for (const r of remote) {
+      const local = await db.transactions.get(r.id)
       // El local sucio y más nuevo gana: todavía no subió y no queremos pisarlo.
       if (local?._dirty === 1 && local.updatedAt >= r.updatedAt) continue
-      await db.movimientos.put(r)
+      await db.transactions.put(r)
     }
   })
 
-  const ultimo = remotos[remotos.length - 1]
-  if (ultimo) await escribirMeta(CLAVE_ULTIMO_PULL, ultimo.updatedAt)
+  const last = remote[remote.length - 1]
+  if (last) await writeMeta(LAST_PULL_KEY, last.updatedAt)
 }
 
 /* ---------- orquestación ---------- */
 
-let corriendo = false
-type Escucha = (e: { sincronizando: boolean; error: string | null }) => void
-const escuchas = new Set<Escucha>()
+let running = false
+type Listener = (e: { syncing: boolean; error: string | null }) => void
+const listeners = new Set<Listener>()
 
-export function alSincronizar(f: Escucha): () => void {
-  escuchas.add(f)
-  return () => escuchas.delete(f)
+export function onSync(f: Listener): () => void {
+  listeners.add(f)
+  return () => listeners.delete(f)
 }
 
-const avisar = (sincronizando: boolean, error: string | null) => {
-  for (const f of escuchas) f({ sincronizando, error })
+const notify = (syncing: boolean, error: string | null) => {
+  for (const f of listeners) f({ syncing, error })
 }
 
-export async function sincronizar(): Promise<void> {
-  if (corriendo || !navigator.onLine) return
+export async function sync(): Promise<void> {
+  if (running || !navigator.onLine) return
   const { data } = await supabase.auth.getSession()
   if (!data.session) return
 
-  corriendo = true
-  avisar(true, null)
+  running = true
+  notify(true, null)
   try {
-    await empujar()
-    await traer()
-    avisar(false, null)
+    await push()
+    await pull()
+    notify(false, null)
   } catch (e) {
     // Un fallo de sync no es un error del usuario: se reintenta y se avisa sin drama.
-    avisar(false, e instanceof Error ? e.message : 'Error de sincronización')
+    notify(false, e instanceof Error ? e.message : 'Error de sincronización')
   } finally {
-    corriendo = false
+    running = false
   }
 }
 
 /** Arranca los disparadores: al volver la red, al volver a la pestaña, y cada 2 minutos. */
-export function iniciarSync(): () => void {
-  const disparar = () => void sincronizar()
+export function startSync(): () => void {
+  const trigger = () => void sync()
 
-  window.addEventListener('online', disparar)
-  const alVolver = () => { if (document.visibilityState === 'visible') disparar() }
-  document.addEventListener('visibilitychange', alVolver)
-  const intervalo = window.setInterval(disparar, 120_000)
+  window.addEventListener('online', trigger)
+  const onVisible = () => { if (document.visibilityState === 'visible') trigger() }
+  document.addEventListener('visibilitychange', onVisible)
+  const interval = window.setInterval(trigger, 120_000)
 
-  disparar()
+  trigger()
 
   return () => {
-    window.removeEventListener('online', disparar)
-    document.removeEventListener('visibilitychange', alVolver)
-    window.clearInterval(intervalo)
+    window.removeEventListener('online', trigger)
+    document.removeEventListener('visibilitychange', onVisible)
+    window.clearInterval(interval)
   }
 }

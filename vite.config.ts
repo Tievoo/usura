@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icono.svg'],
+      includeAssets: ['icon.svg'],
       manifest: {
         name: 'Usura',
         short_name: 'Usura',
@@ -20,7 +20,7 @@ export default defineConfig({
         background_color: '#141210',
         theme_color: '#141210',
         icons: [
-          { src: 'icono.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
+          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
         ],
       },
       workbox: {
@@ -34,7 +34,7 @@ export default defineConfig({
             urlPattern: /^https:\/\/(dolarapi\.com|api\.argentinadatos\.com)\/.*/i,
             handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'cotizaciones',
+              cacheName: 'fx-rates',
               expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 365 },
             },
           },

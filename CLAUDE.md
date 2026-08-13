@@ -12,7 +12,8 @@ App personal de finanzas de Tievo. PWA (React + Vite + TypeScript), offline-firs
 
 - **Cargar un gasto es la función principal.** Si el alta pasa de tres toques, está mal resuelta.
 - **Dinero en `numeric(14,2)`, nunca float.** En TypeScript, montos en centavos o `decimal.js`.
-- **El snapshot de cotización es inmutable.** `monto_ars` y `fx_valor` se escriben una vez al crear el movimiento y no se recalculan nunca, ni al corregir la fuente de datos.
+- **Todo el código va en inglés.** Tablas, columnas, valores de enum, tipos, funciones, variables y nombres de archivo. Los **textos de la UI siguen en español rioplatense** y los comentarios y documentos también. Dos excepciones deliberadas: los **slugs de categoría** (`comida`, `transporte`), que son valores de dominio ya presentes en las filas y en el CSV de Meow, y los **tokens de color** del design system (`--cat-comida`).
+- **El snapshot de cotización es inmutable.** `ars_amount` y `fx_rate` se escriben una vez al crear la transacción y no se recalculan nunca, ni al corregir la fuente de datos.
 - **Escritura local primero.** La UI no espera a la red para confirmar un gasto. Una API caída (cotización, Splitwise) nunca bloquea el alta.
 - **Borrado lógico** (`deleted_at`) en todo lo sincronizable.
 - **Nada de números inventados.** Si un valor es estimado (cotización de fin de semana, recurrente no confirmado), la UI lo dice.
@@ -24,7 +25,7 @@ App personal de finanzas de Tievo. PWA (React + Vite + TypeScript), offline-firs
 
 Dirección elegida: **«Instrumento»** — panel de medición oscuro, ámbar `#DDA544` sobre carbón cálido `#141210`. Oscuro por defecto; el tema claro es la contraparte para usar al sol.
 
-El sistema vive en `design-system/` y está sincronizado al proyecto "Usura Design System" de Claude Design (`e045ee14-0ad8-4805-a396-ba38c7d8bf94`).
+El sistema vive en `design-system/` y **el repo es la fuente de verdad**. Se armó en un proyecto de Claude Design (`e045ee14-0ad8-4805-a396-ba38c7d8bf94`) que quedó en otra cuenta y ya no es accesible: esa copia remota no cuenta.
 
 - `design-system/SKILL.md` — entrada obligatoria antes de tocar cualquier pantalla.
 - `design-system/colors_and_type.css` — todos los tokens. Ningún valor de color, tipografía o espaciado se escribe a mano.
@@ -41,11 +42,11 @@ Existe otro design system del usuario, "Crontu Design System", que es de otro pr
 
 Bun (no npm). `bun run dev` / `build` / `typecheck`. Vite 8 + React 19 + TS 7, Dexie 4, supabase-js 2, vite-plugin-pwa.
 
-- `src/lib/plata.ts` — **todo el dinero pasa por acá**, en centavos enteros. Nunca un float, nunca formatear a mano.
-- `src/lib/fechas.ts` — fechas como `'YYYY-MM-DD'` en hora local. `new Date('2026-07-31')` es UTC y resta un día.
+- `src/lib/money.ts` — **todo el dinero pasa por acá**, en centavos enteros. Nunca un float, nunca formatear a mano.
+- `src/lib/dates.ts` — fechas como `'YYYY-MM-DD'` en hora local. `new Date('2026-07-31')` es UTC y resta un día.
 - `src/lib/db.ts` — Dexie es la fuente de verdad de la UI.
 - `src/lib/sync.ts` — cola de subida y pull incremental. Nada de acá bloquea el alta.
-- `src/data/categorias.ts` — la taxonomía. El slug es la clave y no cambia nunca.
+- `src/data/categories.ts` — la taxonomía. El slug es la clave, está en castellano y no cambia nunca.
 - `supabase/migrations/` — toda tabla nace con su RLS en el mismo archivo.
 
 ## Estado

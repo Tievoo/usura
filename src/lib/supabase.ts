@@ -22,24 +22,24 @@ export const supabase = createClient(url, key, {
 })
 
 /** Fila tal como viaja por PostgREST: snake_case y numeric como string. */
-export interface FilaMovimiento {
+export interface TransactionRow {
   id: string
   user_id: string
-  tipo: string
-  fecha: string
-  concepto: string
-  monto_original: string
-  moneda: string
-  monto_ars: string
-  fx_valor: string | null
-  fx_tipo: string | null
-  fx_fecha: string | null
-  categoria: string
-  subcategoria: string | null
-  medio_pago: string
-  reembolso_ars: string
-  notas: string | null
-  origen: string
+  type: string
+  date: string
+  description: string
+  original_amount: string
+  currency: string
+  ars_amount: string
+  fx_rate: string | null
+  fx_type: string | null
+  fx_date: string | null
+  category: string
+  subcategory: string | null
+  payment_method: string
+  refund_ars: string
+  notes: string | null
+  source: string
   created_at: string
   updated_at: string
   deleted_at: string | null

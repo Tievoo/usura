@@ -2,82 +2,82 @@ import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
-import { alSincronizar, iniciarSync } from './lib/sync'
-import { contarPendientes, vaciarTodo } from './lib/db'
-import { precargar } from './lib/fx'
+import { onSync, startSync } from './lib/sync'
+import { countPending, clearAll } from './lib/db'
+import { preload } from './lib/fx'
 import { Login } from './components/Login'
-import { TabBar, type Pestania } from './components/TabBar'
-import { Movimientos } from './screens/Movimientos'
-import { Pendiente } from './screens/Pendiente'
+import { TabBar, type Tab } from './components/TabBar'
+import { Transactions } from './screens/Transactions'
+import { ComingSoon } from './screens/ComingSoon'
 
 export function App() {
   const [session, setSession] = useState<Session | null>(null)
-  const [cargando, setCargando] = useState(true)
-  const [pestania, setPestania] = useState<Pestania>('movimientos')
+  const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState<Tab>('transactions')
   const [online, setOnline] = useState(navigator.onLine)
-  const [errorSync, setErrorSync] = useState<string | null>(null)
+  const [syncError, setSyncError] = useState<string | null>(null)
 
-  const pendientes = useLiveQuery(() => contarPendientes(), [], 0)
+  const pending = useLiveQuery(() => countPending(), [], 0)
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
-      setCargando(false)
+      setLoading(false)
     })
-    const { data: sub } = supabase.auth.onAuthStateChange((evento, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s)
       // La base local es de un solo usuario a la vez: al salir, se limpia.
-      if (evento === 'SIGNED_OUT') void vaciarTodo()
+      if (event === 'SIGNED_OUT') void clearAll()
     })
     return () => sub.subscription.unsubscribe()
   }, [])
 
   useEffect(() => {
     if (!session) return
-    precargar()
-    const detener = iniciarSync()
-    const off = alSincronizar(({ error }) => setErrorSync(error))
-    return () => { detener(); off() }
+    preload()
+    const stop = startSync()
+    const off = onSync(({ error }) => setSyncError(error))
+    return () => { stop(); off() }
   }, [session])
 
   useEffect(() => {
-    const arriba = () => setOnline(true)
-    const abajo = () => setOnline(false)
-    window.addEventListener('online', arriba)
-    window.addEventListener('offline', abajo)
+    const up = () => setOnline(true)
+    const down = () => setOnline(false)
+    window.addEventListener('online', up)
+    window.addEventListener('offline', down)
     return () => {
-      window.removeEventListener('online', arriba)
-      window.removeEventListener('offline', abajo)
+      window.removeEventListener('online', up)
+      window.removeEventListener('offline', down)
     }
   }, [])
 
-  if (cargando) return <div className="app" />
+  if (loading) return <div className="app" />
   if (!session) return <div className="app"><Login /></div>
 
-  const estado = { online, pendientes, error: errorSync }
+  const status = { online, pending, error: syncError }
 
   return (
     <div className="app">
-      {pestania === 'movimientos' && <Movimientos userId={session.user.id} estado={estado} />}
-      {pestania === 'analisis' && (
-        <Pendiente
-          titulo="Análisis"
-          texto="El gasto por categoría, por mes y por año llega en una próxima iteración. Todo lo que cargues ya queda listo para aparecer acá."
+      {tab === 'transactions' && <Transactions userId={session.user.id} status={status} />}
+      {tab === 'analytics' && (
+        <ComingSoon
+          title="Análisis"
+          text="El gasto por categoría, por mes y por año llega en una próxima iteración. Todo lo que cargues ya queda listo para aparecer acá."
         />
       )}
-      {pestania === 'recurrentes' && (
-        <Pendiente
-          titulo="Recurrentes"
-          texto="Suscripciones y cuotas, generándose solas en su fecha. Todavía no está."
+      {tab === 'recurring' && (
+        <ComingSoon
+          title="Recurrentes"
+          text="Suscripciones y cuotas, generándose solas en su fecha. Todavía no está."
         />
       )}
-      {pestania === 'deudas' && (
-        <Pendiente
-          titulo="Deudas"
-          texto="Quién te debe y a quién le debés, más el import de Splitwise. Todavía no está."
+      {tab === 'debts' && (
+        <ComingSoon
+          title="Deudas"
+          text="Quién te debe y a quién le debés, más el import de Splitwise. Todavía no está."
         />
       )}
-      <TabBar activa={pestania} onCambiar={setPestania} />
+      <TabBar active={tab} onChange={setTab} />
     </div>
   )
 }

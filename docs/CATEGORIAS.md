@@ -65,7 +65,7 @@ Las 41 "categorías" de Meow venían con typos, truncados, 39 filas vacías y un
 
 33 filas usan la columna `Reembolsar` de Meow: gastaste 99.950 en sushi libre y te devolvieron 60.402.
 
-Se migran con **monto bruto en `monto_ars` y el reembolso en `reembolso_ars`**. Los totales usan el neto (`monto_ars - reembolso_ars`), así que el mes da bien sin perder el dato de lo que realmente salió de tu bolsillo.
+Se migran con **monto bruto en `ars_amount` y el reembolso en `refund_ars`**. Los totales usan el neto (`ars_amount - refund_ars`), así que el mes da bien sin perder el dato de lo que realmente salió de tu bolsillo.
 
 ## 5. Reglas del importador
 

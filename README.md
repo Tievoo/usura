@@ -25,8 +25,8 @@ todo `VITE_*` se compila dentro del bundle.
 Esto va una sola vez, en el dashboard del proyecto. Sin los pasos 1 y 2 la app
 funciona igual —guarda todo en IndexedDB— pero no sincroniza.
 
-**1. Crear las tablas.** SQL Editor → pegar y correr `supabase/migrations/0001_movimientos.sql`.
-Crea `movimientos` y `fx_rates`, activa RLS en las dos y cierra el rol anónimo.
+**1. Crear las tablas.** SQL Editor → pegar y correr `supabase/migrations/0001_transactions.sql`.
+Crea `transactions` y `fx_rates`, activa RLS en las dos y cierra el rol anónimo.
 
 **2. Cerrar el alta pública.** Authentication → Sign In / Providers → desactivar
 el registro de usuarios nuevos. Sin esto, cualquiera con la publishable key se

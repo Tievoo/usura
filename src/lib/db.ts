@@ -1,6 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { Cotizacion, Movimiento } from './tipos'
-import { rangoMes, type Mes } from './fechas'
+import type { FxRate, Transaction } from './types'
+import { monthRange, type MonthStr } from './dates'
 
 /**
  * IndexedDB es la fuente de verdad de la UI. Supabase es una réplica a la que
@@ -8,74 +8,74 @@ import { rangoMes, type Mes } from './fechas'
  */
 
 interface Meta {
-  clave: string
-  valor: string
+  key: string
+  value: string
 }
 
 const db = new Dexie('usura') as Dexie & {
-  movimientos: EntityTable<Movimiento, 'id'>
-  cotizaciones: EntityTable<Cotizacion, 'fecha'>
-  meta: EntityTable<Meta, 'clave'>
+  transactions: EntityTable<Transaction, 'id'>
+  fxRates: EntityTable<FxRate, 'date'>
+  meta: EntityTable<Meta, 'key'>
 }
 
 db.version(1).stores({
   // _dirty indexado: es la consulta de la cola de sincronización.
-  movimientos: 'id, fecha, updatedAt, _dirty, categoria, [fecha+id]',
-  cotizaciones: 'fecha',
-  meta: 'clave',
+  transactions: 'id, date, updatedAt, _dirty, category, [date+id]',
+  fxRates: 'date',
+  meta: 'key',
 })
 
 export { db }
 
 /* ---------- meta ---------- */
 
-export async function leerMeta(clave: string): Promise<string | null> {
-  return (await db.meta.get(clave))?.valor ?? null
+export async function readMeta(key: string): Promise<string | null> {
+  return (await db.meta.get(key))?.value ?? null
 }
 
-export async function escribirMeta(clave: string, valor: string): Promise<void> {
-  await db.meta.put({ clave, valor })
+export async function writeMeta(key: string, value: string): Promise<void> {
+  await db.meta.put({ key, value })
 }
 
-/* ---------- movimientos ---------- */
+/* ---------- transactions ---------- */
 
-/** Los del mes, sin borrados, ordenados de más nuevo a más viejo. */
-export async function movimientosDelMes(mes: Mes): Promise<Movimiento[]> {
-  const [desde, hasta] = rangoMes(mes)
-  const filas = await db.movimientos.where('fecha').between(desde, hasta, true, true).toArray()
-  return filas
-    .filter((m) => !m.deletedAt)
-    .sort((a, b) => (a.fecha === b.fecha ? b.createdAt.localeCompare(a.createdAt) : b.fecha.localeCompare(a.fecha)))
+/** Las del mes, sin borradas, ordenadas de más nueva a más vieja. */
+export async function transactionsOfMonth(month: MonthStr): Promise<Transaction[]> {
+  const [from, to] = monthRange(month)
+  const rows = await db.transactions.where('date').between(from, to, true, true).toArray()
+  return rows
+    .filter((t) => !t.deletedAt)
+    .sort((a, b) => (a.date === b.date ? b.createdAt.localeCompare(a.createdAt) : b.date.localeCompare(a.date)))
 }
 
 /** Alta local. Marca sucio para que la cola lo suba cuando pueda. */
-export async function guardarMovimiento(m: Movimiento): Promise<void> {
-  await db.movimientos.put({ ...m, _dirty: 1 })
+export async function saveTransaction(t: Transaction): Promise<void> {
+  await db.transactions.put({ ...t, _dirty: 1 })
 }
 
-export async function borrarMovimiento(id: string): Promise<void> {
-  const ahora = new Date().toISOString()
+export async function deleteTransaction(id: string): Promise<void> {
+  const now = new Date().toISOString()
   // Borrado lógico: si borráramos la fila, el borrado no se propagaría al otro dispositivo.
-  await db.movimientos.update(id, { deletedAt: ahora, updatedAt: ahora, _dirty: 1 })
+  await db.transactions.update(id, { deletedAt: now, updatedAt: now, _dirty: 1 })
 }
 
-export const contarPendientes = (): Promise<number> => db.movimientos.where('_dirty').equals(1).count()
+export const countPending = (): Promise<number> => db.transactions.where('_dirty').equals(1).count()
 
 /* ---------- cotizaciones ---------- */
 
-export const cotizacionLocal = (fecha: string): Promise<Cotizacion | undefined> => db.cotizaciones.get(fecha)
+export const localRate = (date: string): Promise<FxRate | undefined> => db.fxRates.get(date)
 
-export async function guardarCotizacion(c: Cotizacion): Promise<void> {
-  await db.cotizaciones.put(c)
+export async function saveRate(r: FxRate): Promise<void> {
+  await db.fxRates.put(r)
 }
 
 /** La más reciente que tengamos, para cuando la API no responde. */
-export async function ultimaCotizacion(): Promise<Cotizacion | undefined> {
-  return db.cotizaciones.orderBy('fecha').last()
+export async function latestRate(): Promise<FxRate | undefined> {
+  return db.fxRates.orderBy('date').last()
 }
 
 /** Se llama al cerrar sesión: la base local es de un solo usuario a la vez. */
-export async function vaciarTodo(): Promise<void> {
-  await Promise.all([db.movimientos.clear(), db.meta.clear()])
+export async function clearAll(): Promise<void> {
+  await Promise.all([db.transactions.clear(), db.meta.clear()])
   // Las cotizaciones no se borran: son dato del mundo, no de la persona.
 }

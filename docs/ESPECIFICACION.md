@@ -75,91 +75,93 @@ Hasta que existan, las pestañas 2–4 muestran un estado vacío honesto en vez 
 Postgres en Supabase; mismo esquema replicado en IndexedDB (Dexie) para el modo offline.
 Montos en `numeric(14,2)`. Nada de floats para dinero.
 
-### `movimientos`
+**Los identificadores van en inglés** —tablas, columnas y valores de enum— aunque la UI y estos documentos estén en castellano. La única excepción son los **slugs de categoría**, que siguen en castellano a propósito: son valores de dominio que ya viajan en las filas y en el CSV de Meow, no identificadores.
+
+### `transactions`
 El único lugar donde vive un movimiento.
 
-Esta tabla describe el **modelo final**. La migración `0001_movimientos.sql` crea el subconjunto que la iteración 1 necesita: las columnas de recurrentes, deudas y Splitwise se agregan en la iteración donde aparece cada función.
+Esta tabla describe el **modelo final**. La migración `0001_transactions.sql` crea el subconjunto que la iteración 1 necesita: las columnas de recurrentes, deudas y Splitwise se agregan en la iteración donde aparece cada función.
 
 | Campo | Tipo | Nota |
 |---|---|---|
 | `id` | uuid | |
 | `user_id` | uuid | FK a `auth.users`. **No nullable, en todas las tablas de datos.** Es el eje del aislamiento. |
-| `tipo` | enum | `gasto` \| `ingreso` |
-| `fecha` | date | Fecha del gasto, no de la carga. Define la cotización aplicada. |
-| `concepto` | text | Texto libre. Es lo que el usuario escribe y busca. |
-| `monto_original` | numeric | Tal como se pagó. |
-| `moneda` | enum | `ARS` \| `USD` |
-| `monto_ars` | numeric | Derivado al insertar. **Nunca se recalcula.** |
-| `fx_valor` | numeric | Cotización aplicada. `null` si `moneda = ARS`. |
-| `fx_tipo` | enum | `oficial` \| `blue` \| `mep` \| `cripto` \| `manual` |
-| `fx_fecha` | date | Fecha de la cotización usada (puede diferir de `fecha` en fines de semana). |
-| `categoria` | text | **Slug estable** de `CATEGORIAS.md` (`comida`, `transporte`), no FK. Ver abajo. |
-| `subcategoria` | text | Slug. Nullable: se puede cargar sin subcategoría. |
-| `medio_pago` | enum | `mercadopago` \| `efectivo` \| `credito` |
-| `reembolso_ars` | numeric | Default 0. Parte que te devolvieron. Los totales usan `monto_ars - reembolso_ars`. |
-| `recurrente_id` | fk | Null si es un gasto suelto. |
-| `cuota_nro`, `cuota_total` | int | Solo para cuotas. |
-| `deuda_id` | fk | Si el gasto generó una deuda a favor. |
+| `type` | enum | `expense` \| `income` |
+| `date` | date | Fecha del gasto, no de la carga. Define la cotización aplicada. |
+| `description` | text | Texto libre. Es lo que el usuario escribe y busca. |
+| `original_amount` | numeric | Tal como se pagó. |
+| `currency` | enum | `ARS` \| `USD` |
+| `ars_amount` | numeric | Derivado al insertar. **Nunca se recalcula.** |
+| `fx_rate` | numeric | Cotización aplicada. `null` si `currency = ARS`. |
+| `fx_type` | enum | `official` \| `blue` \| `mep` \| `crypto` \| `manual` |
+| `fx_date` | date | Fecha de la cotización usada (puede diferir de `date` en fines de semana). |
+| `category` | text | **Slug estable** de `CATEGORIAS.md` (`comida`, `transporte`), en castellano y no FK. Ver abajo. |
+| `subcategory` | text | Slug. Nullable: se puede cargar sin subcategoría. |
+| `payment_method` | enum | `mercadopago` \| `cash` \| `credit` |
+| `refund_ars` | numeric | Default 0. Parte que te devolvieron. Los totales usan `ars_amount - refund_ars`. |
+| `recurring_rule_id` | fk | Null si es un gasto suelto. |
+| `installment_no`, `installment_total` | int | Solo para cuotas. |
+| `debt_id` | fk | Si el gasto generó una deuda a favor. |
 | `splitwise_expense_id` | text | Para no duplicar en la sync. |
-| `notas` | text | |
-| `origen` | enum | `manual` \| `recurrente` \| `import_meow` \| `splitwise` |
+| `notes` | text | |
+| `source` | enum | `manual` \| `recurring` \| `meow_import` \| `splitwise` |
 | `created_at`, `updated_at`, `deleted_at` | timestamptz | Borrado lógico, necesario para el sync. |
 
-### `categorias` / `subcategorias`
-`id`, `user_id`, `nombre`, `icono`, `color`, `orden`, `tipo` (`gasto`\|`ingreso`), `activa`.
-Subcategoría cuelga de `categoria_id`. Editables desde la app: la taxonomía inicial es un punto de partida, no una jaula.
+### `categories` / `subcategories`
+`id`, `user_id`, `slug`, `name`, `icon`, `color`, `position`, `type` (`expense`\|`income`), `active`.
+La subcategoría cuelga de `category_id`. Editables desde la app: la taxonomía inicial es un punto de partida, no una jaula.
 
-**El movimiento guarda un slug de texto, no una FK.** El slug (`comida`, `transporte`, `merienda`) es estable y no cambia nunca. Esta tabla, cuando exista, se *cuelga* del slug para pisar nombre, color, orden o para desactivar una categoría — no es dueña del dato del movimiento. Dos consecuencias buenas:
+**La transacción guarda un slug de texto, no una FK.** El slug (`comida`, `transporte`, `merienda`) es estable y no cambia nunca. Esta tabla, cuando exista, se *cuelga* del slug para pisar nombre, color, orden o para desactivar una categoría — no es dueña del dato de la transacción. Dos consecuencias buenas:
 
-- La iteración 1 no necesita la tabla: la taxonomía vive en `src/data/categorias.ts` y ya se puede cargar y clasificar gastos.
-- Cuando llegue la edición por usuario, **no hay que migrar la columna del movimiento**. Se agrega la tabla y se hace join por slug.
+- La iteración 1 no necesita la tabla: la taxonomía vive en `src/data/categories.ts` y ya se puede cargar y clasificar gastos.
+- Cuando llegue la edición por usuario, **no hay que migrar la columna de la transacción**. Se agrega la tabla y se hace join por slug.
 
 **Son por usuario, no globales.** La taxonomía de `CATEGORIAS.md` es una *plantilla*: al crear una cuenta, un trigger `on auth.user created` le copia las 17 categorías y sus subcategorías. Así cada uno renombra, desactiva o agrega lo suyo sin tocar al resto. La alternativa —categorías globales— significa que si un amigo renombra «Apuestas» a «Timba», se le cambia a todos.
 
 El costo es que la plantilla vive en una migración y actualizarla no retroactúa sobre cuentas ya creadas. Es el precio correcto a pagar.
 
 ### `tags` / `transaction_tags`
-`tags`: `id`, `nombre`, `clase` (`persona`\|`evento`\|`libre`), `color`.
+`tags`: `id`, `name`, `kind` (`person`\|`event`\|`free`), `color`.
 `transaction_tags`: N a N. Autocompletado por frecuencia de uso.
-Una `tag` de clase `persona` puede vincularse a una persona de deudas/Splitwise.
+Una `tag` de clase `person` puede vincularse a una persona de deudas/Splitwise.
 
 ### `fx_rates`
-`fecha` (PK), `oficial_compra`, `oficial_venta`, `blue`, `mep`, `cripto`, `fuente`, `fetched_at`.
+`date` (PK), `official_buy`, `official_sell`, `blue`, `mep`, `crypto`, `provider`, `fetched_at`.
 Una fila por día. Se cachea agresivo: la cotización de un día pasado no cambia nunca.
 
 **Es la única tabla sin `user_id`.** La cotización del dólar es un dato del mundo, no de una persona: se comparte entre todos y se trae una sola vez. Por eso su RLS es distinta al resto —lectura para cualquier autenticado, escritura solo desde el cron con la secret key:
 
 ```sql
-create policy "lectura para todos" on fx_rates
+create policy "read for authenticated" on fx_rates
   for select to authenticated using (true);
 -- sin política de insert/update: solo la secret key escribe acá
 ```
 
 - Cotización del día: `https://dolarapi.com/v1/dolares` (devuelve todas juntas).
 - Histórico para el backfill: `https://api.argentinadatos.com/v1/cotizaciones/dolares` — **validar formato y cobertura desde ene 2024 antes de la iteración 2.**
-- Fin de semana / feriado: se usa la última cotización disponible y se registra en `fx_fecha`.
-- Fallback si la API no responde al cargar: se guarda el gasto en USD con `fx_valor = null` y queda pendiente de resolver. Nunca se bloquea la carga de un gasto por una API caída.
+- Fin de semana / feriado: se usa la última cotización disponible y se registra en `fx_date`.
+- Fallback si la API no responde al cargar: se guarda el gasto en USD con `fx_rate = null` y queda pendiente de resolver. Nunca se bloquea la carga de un gasto por una API caída.
 
-### `recurrentes`
-`id`, `tipo` (`suscripcion`\|`cuotas`), `concepto`, `monto`, `moneda`, `categoria_id`, `subcategoria_id`, `medio_pago`, `frecuencia` (`mensual`\|`anual`), `dia_del_mes`, `fecha_inicio`, `fecha_fin`, `cuotas_total`, `activo`, `tags`.
+### `recurring_rules`
+`id`, `type` (`subscription`\|`installments`), `description`, `amount`, `currency`, `category`, `subcategory`, `payment_method`, `frequency` (`monthly`\|`yearly`), `day_of_month`, `start_date`, `end_date`, `installments_total`, `active`, `tags`.
 
-- Generación idempotente: clave única `(recurrente_id, periodo)` para que no se dupliquen si la app abre dos veces el mismo día.
+- Generación idempotente: clave única `(recurring_rule_id, period)` para que no se dupliquen si la app abre dos veces el mismo día.
 - Se generan al abrir la app y también server-side (cron de Supabase), para que el total del mes sea correcto aunque no la abras.
 - Editar una instancia no toca la serie. Editar la serie no reescribe el pasado.
 - Suscripción en USD: cada instancia toma la cotización de su propia fecha.
 
-### `deudas` / `pagos_deuda`
-`deudas`: `id`, `tag_id` (persona), `direccion` (`me_debe`\|`le_debo`), `monto`, `moneda`, `concepto`, `fecha`, `estado` (`abierta`\|`liquidada`), `origen` (`manual`\|`splitwise`\|`gasto_compartido`), `transaction_id`, `splitwise_expense_id`.
-`pagos_deuda`: `id`, `deuda_id`, `monto`, `fecha`, `transaction_id`.
+### `debts` / `debt_payments`
+`debts`: `id`, `tag_id` (persona), `direction` (`owed_to_me`\|`i_owe`), `amount`, `currency`, `description`, `date`, `status` (`open`\|`settled`), `source` (`manual`\|`splitwise`\|`shared_expense`), `transaction_id`, `splitwise_expense_id`.
+`debt_payments`: `id`, `debt_id`, `amount`, `date`, `transaction_id`.
 
 Las deudas **no** entran al total de gastos. Un gasto compartido cuenta por lo que te toca a vos: el resto es una deuda a favor.
 
 ## 4. Multi-moneda
 
-Regla: **el snapshot es inmutable**. Un gasto de USD 50 el 3 de marzo de 2024 quedó registrado a la cotización de ese día y ese `monto_ars` no se toca nunca, aunque después corrijamos la fuente de datos.
+Regla: **el snapshot es inmutable**. Un gasto de USD 50 el 3 de marzo de 2024 quedó registrado a la cotización de ese día y ese `ars_amount` no se toca nunca, aunque después corrijamos la fuente de datos.
 
 - Al cargar en USD se muestra la conversión estimada antes de confirmar, con la cotización y su fecha visibles.
-- Se puede pisar el tipo de cambio a mano (`fx_tipo = manual`) para operaciones puntuales.
+- Se puede pisar el tipo de cambio a mano (`fx_type = manual`) para operaciones puntuales.
 - Los totales del mes se muestran en ARS. El switch a USD llega en la iteración 4 y se calcula con los snapshots ya guardados: por eso no hace falta migrar nada después.
 
 ## 5. Splitwise
@@ -212,9 +214,9 @@ Las claves JWT viejas (`anon` y `service_role`) quedan deprecadas a fin de 2026:
 Es el único límite real, y no se activa solo: las tablas creadas con `create table` desde el SQL editor **vienen sin RLS**. Cada tabla del modelo lleva, explícitamente:
 
 ```sql
-alter table <tabla> enable row level security;
+alter table <table> enable row level security;
 
-create policy "solo el dueño" on <tabla>
+create policy "owner only" on <table>
   for all to authenticated
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
@@ -256,7 +258,7 @@ Con un solo usuario, un bug de RLS solo te exponía a vos mismo. Con amigos aden
 
 ### Lo que este modelo no cubre
 
-- **La base local no está cifrada.** IndexedDB queda en claro en el dispositivo: quien desbloquee tu celular ve tus gastos. La protección es el bloqueo del dispositivo. Cifrar la base local rompería la búsqueda por concepto, así que no vale la pena para este caso.
+- **La base local no está cifrada.** IndexedDB queda en claro en el dispositivo: quien desbloquee tu celular ve tus gastos. La protección es el bloqueo del dispositivo. Cifrar la base local rompería la búsqueda por concepto (`description`), así que no vale la pena para este caso.
 - **La publishable key permite enumerar el proyecto.** Con RLS bien puesto no da acceso a datos, pero sí revela que el proyecto existe y qué tablas expone la API. Es el costo de una arquitectura sin backend propio.
 
 ## 9. Pendiente de decidir

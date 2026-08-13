@@ -13,10 +13,10 @@ import '@fontsource/ibm-plex-mono/latin-400.css'
 import './styles/app.css'
 import { App } from './App'
 
-const raiz = document.getElementById('root')
-if (!raiz) throw new Error('Falta #root en index.html')
+const root = document.getElementById('root')
+if (!root) throw new Error('Falta #root en index.html')
 
-createRoot(raiz).render(
+createRoot(root).render(
   <StrictMode>
     <App />
   </StrictMode>,

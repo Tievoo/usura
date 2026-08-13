@@ -7,19 +7,19 @@ import { supabase } from '../lib/supabase'
  */
 export function Login() {
   const [email, setEmail] = useState('')
-  const [estado, setEstado] = useState<'idle' | 'enviando' | 'enviado' | 'error'>('idle')
+  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [error, setError] = useState('')
 
-  async function enviar(e: React.FormEvent) {
+  async function send(e: React.FormEvent) {
     e.preventDefault()
     if (!email.trim()) return
-    setEstado('enviando')
+    setState('sending')
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: { shouldCreateUser: false, emailRedirectTo: window.location.origin },
     })
     if (error) {
-      setEstado('error')
+      setState('error')
       setError(
         error.message.toLowerCase().includes('signups not allowed')
           ? 'Ese mail no está invitado. Pedile a Tievo que te dé acceso.'
@@ -27,7 +27,7 @@ export function Login() {
       )
       return
     }
-    setEstado('enviado')
+    setState('sent')
   }
 
   return (
@@ -37,14 +37,14 @@ export function Login() {
         <h1>Tus gastos</h1>
       </div>
 
-      {estado === 'enviado' ? (
+      {state === 'sent' ? (
         <p className="msg">
           Te mandé un link a <b>{email}</b>. Abrilo desde este mismo dispositivo y listo.
         </p>
       ) : (
         <>
           <p>Entrás con un link al mail. No hay contraseña que recordar.</p>
-          <form onSubmit={enviar}>
+          <form onSubmit={send}>
             <input
               type="email"
               value={email}
@@ -54,11 +54,11 @@ export function Login() {
               inputMode="email"
               required
             />
-            <button type="submit" disabled={estado === 'enviando' || !email.trim()}>
-              {estado === 'enviando' ? 'Mandando…' : 'Mandame el link'}
+            <button type="submit" disabled={state === 'sending' || !email.trim()}>
+              {state === 'sending' ? 'Mandando…' : 'Mandame el link'}
             </button>
           </form>
-          {estado === 'error' && <p className="msg error">{error}</p>}
+          {state === 'error' && <p className="msg error">{error}</p>}
         </>
       )}
     </div>
