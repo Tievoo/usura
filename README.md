@@ -22,24 +22,74 @@ todo `VITE_*` se compila dentro del bundle.
 
 ## Puesta a punto de Supabase
 
-Esto va una sola vez, en el dashboard del proyecto. Sin los pasos 1 y 2 la app
-funciona igual —guarda todo en IndexedDB— pero no sincroniza.
+Esto va una sola vez. Sin los pasos 1 y 2 la app funciona igual —guarda todo en
+IndexedDB— pero no sincroniza.
 
-**1. Crear las tablas.** SQL Editor → pegar y correr `supabase/migrations/0001_transactions.sql`.
+**1. Crear las tablas.** Con el CLI, que ya está como devDependency:
+
+```bash
+bun x supabase login                                # abre el navegador, una vez por máquina
+bun x supabase link --project-ref ykrjrjrtcwhocozjmhyk   # pide la password de la base
+bun x supabase db push                              # aplica supabase/migrations/
+```
+
 Crea `transactions` y `fx_rates`, activa RLS en las dos y cierra el rol anónimo.
+De ahí en más, cada cambio de esquema es un archivo nuevo:
+`bun x supabase migration new <nombre>` y otro `db push`. **Nada de tocar el
+esquema desde el SQL Editor**: lo que no está en `supabase/migrations/` no existe.
 
-**2. Cerrar el alta pública.** Authentication → Sign In / Providers → desactivar
-el registro de usuarios nuevos. Sin esto, cualquiera con la publishable key se
-hace una cuenta en el proyecto.
+Los nombres de archivo llevan timestamp (`20260813230913_transactions.sql`)
+porque es lo que el CLI usa para ordenar y para saber qué ya aplicó. Un prefijo
+`0001_` lo rechaza.
+
+**2. Config de auth.** Vive en `supabase/config.toml` y se aplica con:
+
+```bash
+bun x supabase config push
+```
+
+Ahí están el `site_url` (`http://localhost:5173`, el puerto de Vite) y
+`enable_signup = false`, que es lo que cierra el alta pública: sin eso, cualquiera
+con la publishable key se hace una cuenta en el proyecto.
+
+**Cuidado con `config push`: empuja la sección de auth entera, no solo lo que
+cambiaste.** Cualquier ajuste hecho a mano en el dashboard que no esté en
+`config.toml` se pisa con el default de la plantilla — y varios de esos defaults
+son *más flojos* que los del proyecto (`max_frequency` de 1m a 1s, `otp_length`
+de 8 a 6). Revisá el diff que imprime antes de aceptarlo, y si tocaste algo en el
+dashboard, traelo al archivo primero.
 
 **3. Invitarte a vos mismo.** Authentication → Users → Invite user, con tu mail.
-Después entrás a la app y pedís el magic link.
+Esto sí es del dashboard. Es obligatorio: `Login.tsx` manda `shouldCreateUser: false`,
+así que un mail no invitado no puede entrar aunque pida el link.
 
 **4. SMTP propio** (Resend o Postmark). El servicio de mail que trae Supabase
 está limitado a unos pocos correos por hora y es solo para desarrollo: con varios
 usuarios pidiendo magic links, el login empieza a fallar en silencio.
 
 Antes del primer deploy, el checklist de `docs/ESPECIFICACION.md` §8.
+
+## Importar el histórico de Meow
+
+Es una migración de una sola vez y **no tiene botón en la app**: se corre a mano.
+Las reglas están en `docs/CATEGORIAS.md` §3 a §6 y se ejecutan en `src/lib/meow.ts`.
+
+```bash
+bun run import:meow --user tu@mail.com            # parsea, resume, escribe el SQL. No toca la base.
+bun run import:meow --user tu@mail.com --apply    # además lo aplica
+```
+
+Por defecto no escribe nada: deja el SQL en `scripts/.out/` para que lo mires.
+No necesita ninguna credencial nueva —usa las que cacheó `supabase link`— y la
+secret key no se toca. Acepta `--desde` / `--hasta` para acotar el rango.
+
+El SQL es idempotente: el id de cada movimiento sale de un hash de su fila del
+CSV, así que correrlo dos veces actualiza en vez de duplicar. Eso permite volver
+a correrlo cuando se agreguen reglas de clasificación.
+
+**Lo que el importador todavía no puede guardar**, porque faltan las tablas:
+las etiquetas (van a `notes` como `#tati`, para no perderlas) y las series de
+cuotas (se detectan y se cuentan, pero no se arma el recurrente).
 
 ## Estado
 

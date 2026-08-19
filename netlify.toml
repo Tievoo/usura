@@ -1,0 +1,32 @@
+# Deploy de Usura. Sitio estático: `dist/` y nada más.
+
+[build]
+  # El install va explícito a propósito. Netlify autodetecta Bun por `bun.lockb`
+  # (el lockfile binario) y el nuestro es `bun.lock`, el de texto de Bun 1.2+.
+  # Bun viene preinstalado en la imagen, así que llamarlo a mano es lo confiable.
+  command = "bun install --frozen-lockfile && bun run build"
+  publish = "dist"
+
+[build.environment]
+  # Misma versión que en la máquina, para que el lockfile no se reinterprete.
+  BUN_VERSION = "1.3.14"
+
+# El service worker nunca se cachea. Es el clásico tiro en el pie de un PWA:
+# un sw viejo cacheado se queda servido para siempre y la app no se actualiza.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# La app no tiene router, pero el callback del magic link vuelve con hash sobre `/`
+# y esto evita un 404 si alguna vez se agregan rutas. Netlify sirve primero los
+# archivos que existen, así que no toca los assets ni el sw.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

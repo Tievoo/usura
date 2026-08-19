@@ -10,3 +10,6 @@ dev-dist/
 *.log
 .DS_Store
 .vite/
+
+# Salida del importador (SQL generado, puede tener datos)
+scripts/.out/
