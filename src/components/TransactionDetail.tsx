@@ -3,6 +3,7 @@ import { format, formatUsd } from '../lib/money'
 import { parseDate } from '../lib/dates'
 import { net, paymentMethodLabel, type Transaction } from '../lib/types'
 import { categoryName, subcategoryName, categoryColor } from '../data/categories'
+import { useCloseOnBack } from '../lib/back'
 
 interface Props {
   transaction: Transaction | null
@@ -26,6 +27,8 @@ const fechaLarga = new Intl.DateTimeFormat('es-AR', {
 export function TransactionDetail({ transaction, onClose, onEdit, onArchive }: Props) {
   const [confirming, setConfirming] = useState(false)
   const open = !!transaction
+
+  useCloseOnBack(open, onClose)
 
   // Al cerrar y volver a abrir, la confirmación no queda armada de la vez anterior.
   useEffect(() => { if (!open) setConfirming(false) }, [open])

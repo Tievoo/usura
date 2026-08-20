@@ -5,7 +5,7 @@ import { TransactionList } from '../components/TransactionList'
 import { ExpenseSheet } from '../components/ExpenseSheet'
 import { TransactionDetail } from '../components/TransactionDetail'
 import { deleteTransaction, saveTransaction, transactionsOfMonth } from '../lib/db'
-import { currentMonth, prevMonth, nextMonth, monthName, monthOf, type MonthStr } from '../lib/dates'
+import { currentMonth, prevMonth, nextMonth, monthName, monthOf, today, dayOf, type MonthStr } from '../lib/dates'
 import { net, type PaymentMethod, type Transaction } from '../lib/types'
 import { sum } from '../lib/money'
 import { sync } from '../lib/sync'
@@ -29,9 +29,21 @@ export function Transactions({ userId, status }: Props) {
 
   const expenses = useMemo(() => ofMonth.filter((t) => t.type === 'expense'), [ofMonth])
   const total = useMemo(() => sum(expenses.map(net)), [expenses])
+
+  /**
+   * Comparar un mes en curso contra un mes cerrado miente: el 20 de agosto vas a
+   * ir «60% abajo» de julio solo porque a julio le quedan once días más de gastos.
+   * Cuando el mes que ves es el actual, el anterior se corta en el mismo día.
+   * Un mes ya terminado sí se compara completo contra completo.
+   */
+  const cutoffDay = month === currentMonth() ? dayOf(today()) : null
   const previousTotal = useMemo(
-    () => sum(ofPrevious.filter((t) => t.type === 'expense').map(net)),
-    [ofPrevious],
+    () => sum(
+      ofPrevious
+        .filter((t) => t.type === 'expense' && (cutoffDay === null || dayOf(t.date) <= cutoffDay))
+        .map(net),
+    ),
+    [ofPrevious, cutoffDay],
   )
 
   /** El alta hereda del último gasto cargado, así casi nunca hay que elegir nada. */
@@ -83,6 +95,7 @@ export function Transactions({ userId, status }: Props) {
         total={total}
         previousTotal={previousTotal}
         count={expenses.length}
+        comparedUpToDay={cutoffDay}
         onPrev={() => setMonth(prevMonth(month))}
         onNext={() => setMonth(nextMonth(month))}
       />

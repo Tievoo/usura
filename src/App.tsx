@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
@@ -10,6 +10,16 @@ import { TabBar, type Tab } from './components/TabBar'
 import { Transactions } from './screens/Transactions'
 import { ComingSoon } from './screens/ComingSoon'
 
+/** El orden de las pestañas, que es el que recorre el swipe. */
+const ORDEN: Tab[] = ['transactions', 'analytics', 'recurring', 'debts']
+
+/** Mínimo recorrido horizontal para que cuente como swipe y no como toque. */
+const MIN_DX = 60
+/** Cuánto más horizontal que vertical tiene que ser, para no robarle el scroll a la lista. */
+const RATIO = 1.5
+/** Un arrastre lento es alguien leyendo, no cambiando de pantalla. */
+const MAX_MS = 600
+
 export function App() {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
@@ -18,6 +28,33 @@ export function App() {
   const [syncError, setSyncError] = useState<string | null>(null)
 
   const pending = useLiveQuery(() => countPending(), [], 0)
+  const gesto = useRef<{ x: number; y: number; t: number } | null>(null)
+
+  function alTocar(e: React.TouchEvent) {
+    // Dentro de una hoja o su fondo, el swipe no cambia de pestaña.
+    if ((e.target as HTMLElement).closest('.sheet, .scrim')) { gesto.current = null; return }
+    const p = e.touches[0]
+    gesto.current = p ? { x: p.clientX, y: p.clientY, t: Date.now() } : null
+  }
+
+  function alSoltar(e: React.TouchEvent) {
+    const g = gesto.current
+    gesto.current = null
+    const p = e.changedTouches[0]
+    if (!g || !p) return
+
+    const dx = p.clientX - g.x
+    const dy = p.clientY - g.y
+    if (Math.abs(dx) < MIN_DX) return
+    if (Math.abs(dx) < Math.abs(dy) * RATIO) return
+    if (Date.now() - g.t > MAX_MS) return
+
+    // Arrastrar a la izquierda avanza, como el orden de lectura.
+    const i = ORDEN.indexOf(tab)
+    const j = dx < 0 ? i + 1 : i - 1
+    const destino = ORDEN[j]
+    if (destino) setTab(destino)
+  }
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
@@ -57,7 +94,7 @@ export function App() {
   const status = { online, pending, error: syncError }
 
   return (
-    <div className="app">
+    <div className="app" onTouchStart={alTocar} onTouchEnd={alSoltar}>
       {tab === 'transactions' && <Transactions userId={session.user.id} status={status} />}
       {tab === 'analytics' && (
         <ComingSoon

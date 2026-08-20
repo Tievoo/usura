@@ -51,10 +51,12 @@ Bun (no npm). `bun run dev` / `build` / `typecheck`. Vite 8 + React 19 + TS 7, D
 
 ## Estado
 
-Especificación cerrada, design system armado, **iteración 1 en curso** (2026-08-11).
+**En producción** en `usura.netlify.app` (2026-08-20), instalable como PWA. Iteración 1 completa salvo etiquetas.
 
-Andando: alta de gasto, ARS/USD con snapshot, total del mes, lista por día con subtotales, borrado lógico, sync, login por magic link, PWA.
+Andando: alta y edición de gasto, ficha del movimiento con archivar, ARS/USD con snapshot, fecha y hora, total del mes con comparación honesta contra el anterior, lista por día con subtotales, borrado lógico, sync, magic link, PWA. El botón atrás cierra modales y el swipe cambia de pestaña.
 
-Falta en la iteración 1: editar un movimiento (hoy solo se borra), etiquetas. Después: importador del CSV, recurrentes, análisis, deudas.
+Histórico de Meow migrado: **1.190 movimientos**, ene 2024 → ago 2026, 1,3% sin categorizar. Se corre a mano con `bun run import:meow` (ver `README.md`); no tiene botón en la app a propósito. Para reclasificar después de afinar una regla, `--reclassify`, que solo toca categoría y etiquetas.
 
-Pendiente del lado de Supabase (ver `README.md`): correr la migración, cerrar el alta pública, invitar usuarios, SMTP propio.
+Falta: etiquetas (hoy viajan en `notes`), gestión de categorías, y las pestañas Análisis, Recurrentes y Deudas, que muestran un estado vacío honesto. Ver `docs/ESPECIFICACION.md` §2.
+
+**Trampa conocida de Supabase**: el proveedor de email no se configura desde `config.toml` y un `config push` lo apaga. Si el login falla con «Email sign-ins are disabled», se prende a mano en el dashboard. Ver el comentario en `supabase/config.toml`.

@@ -6,6 +6,11 @@ interface Props {
   total: Cents
   previousTotal: Cents
   count: number
+  /**
+   * Día en que se cortó el mes anterior para que la comparación sea justa, o null
+   * si se comparan dos meses completos.
+   */
+  comparedUpToDay: number | null
   onPrev: () => void
   onNext: () => void
 }
@@ -18,7 +23,7 @@ interface Props {
  * gastaste más, la barra queda neutra y el número se dice sin adjetivos. La app
  * no juzga, y el rojo está reservado para errores y para lo que debés.
  */
-export function MonthHeader({ month, total, previousTotal, count, onPrev, onNext }: Props) {
+export function MonthHeader({ month, total, previousTotal, count, comparedUpToDay, onPrev, onNext }: Props) {
   const comparable = previousTotal > 0 && total > 0
   const less = total < previousTotal
   const pct = comparable ? Math.round((Math.abs(total - previousTotal) / previousTotal) * 100) : 0
@@ -40,6 +45,9 @@ export function MonthHeader({ month, total, previousTotal, count, onPrev, onNext
               </span>
               <b className={less ? 'menos' : ''}>
                 {pct}% {less ? 'menos' : 'más'} que {monthName(prevMonth(month))}
+                {/* Si la comparación es parcial se dice: un mes en curso contra un
+                    mes completo daría una caída que no existe. */}
+                {comparedUpToDay !== null && ` hasta el ${comparedUpToDay}`}
               </b>
             </>
           ) : (

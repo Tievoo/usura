@@ -3,7 +3,7 @@
 App personal de finanzas. **Multi-usuario por invitación**: Tievo y un puñado de amigos, cada uno con sus datos completamente aislados. No es un producto público. Uso diario en mobile y consulta en web.
 Inspiración: Meow Money Manager. Reemplaza a Meow + complementa Splitwise.
 
-Estado: especificación acordada (2026-08-11). Sin código todavía.
+Estado: iteración 1 andando en producción (2026-08-20). Histórico de Meow migrado: 1.190 movimientos.
 
 ---
 
@@ -23,7 +23,7 @@ Estado: especificación acordada (2026-08-11). Sin código todavía.
 | Recurrentes | Se generan **automáticamente** en su fecha. Cada instancia es editable/borrable sin romper la serie. |
 | Deudas | Import **solo-lectura** de Splitwise + deudas manuales. Splitwise sigue siendo fuente de verdad de lo compartido. |
 | Histórico | Migrar 1.152 de los 1.230 registros con mapeo revisado. Ver `CATEGORIAS.md`. |
-| Diseño | Dirección **«Instrumento»** (oscura, ámbar sobre carbón cálido). Sistema en `design-system/`, sincronizado a Claude Design. |
+| Diseño | Dirección **«Instrumento»** (oscura, ámbar sobre carbón cálido). Sistema en `design-system/`, que es la fuente de verdad: la copia en Claude Design quedó en otra cuenta y no cuenta. |
 | Tipografía | Superfamilia **IBM Plex** (Sans Condensed / Sans / Mono), autohospedada vía `@fontsource`. |
 
 ## 2. Alcance por iteración
@@ -37,16 +37,34 @@ Estado: especificación acordada (2026-08-11). Sin código todavía.
 - Categorías/subcategorías cargadas, para el alta.
 - ARS + USD con conversión y snapshot de cotización.
 - Offline-first funcionando de verdad (alta sin señal, sync al volver).
+- Ficha del movimiento al tocarlo, con editar y archivar. Nunca un `confirm` del
+  navegador: tocar para mirar no puede ser un riesgo.
+- Hora del movimiento, además de la fecha.
+- **Comparación honesta con el mes anterior.** Un mes en curso se compara contra el
+  anterior *cortado en el mismo día*; comparar 20 días contra 31 inventa una caída
+  que no existe. Un mes ya cerrado sí se compara completo. La UI dice cuál de las
+  dos está mostrando.
+- **Controles del sistema.** El botón atrás cierra el modal abierto en vez de salir
+  de la app, y el swipe horizontal cambia de pestaña. En un PWA instalado esto no
+  viene gratis: sin el manejo del historial, atrás te expulsa de la app.
 
-**Iteración 2 — Migración**
+**Iteración 2 — Migración y categorías**
 - Importador del CSV de Meow con las reglas de `CATEGORIAS.md`.
 - Bandeja de "Sin categorizar" para reclasificar desde la app.
 - Backfill de cotizaciones históricas (ene 2024 → hoy).
+- **Gestión de categorías**: lista, alta y edición, con acceso desde la pantalla
+  principal y desde el alta de gasto. Hoy la taxonomía es un archivo y solo se
+  puede elegir, no cambiar. Ver `categories` en §3: la tabla se cuelga del slug,
+  así que esto no migra la columna del movimiento.
 
 **Iteración 3 — Recurrentes**
 - Suscripciones (mensual/anual) y cuotas (N de M, con monto y total conocidos).
 - Generación automática, edición de instancia suelta, baja de la serie.
 - Vista de "qué se viene este mes".
+- **Lista de series** con, por cada una: cuántas veces se generó ya, si tiene fin
+  conocido (las cuotas) o sigue hasta que la cortes vos (las suscripciones), y
+  cuánto lleva gastado en total. Una suscripción sin fecha de fin no es un error:
+  es lo normal, y la lista tiene que distinguirlo de una cuota 3 de 12.
 
 **Iteración 4 — Análisis**
 - Navegación por meses y años, gasto por categoría y subcategoría, comparativas.
@@ -88,6 +106,7 @@ Esta tabla describe el **modelo final**. La migración `0001_transactions.sql` c
 | `user_id` | uuid | FK a `auth.users`. **No nullable, en todas las tablas de datos.** Es el eje del aislamiento. |
 | `type` | enum | `expense` \| `income` |
 | `date` | date | Fecha del gasto, no de la carga. Define la cotización aplicada. |
+| `time` | time | Hora local, sin timezone. Nullable: `null` = no se sabe y la UI lo dice. No es un `timestamptz` a propósito, ver §4. |
 | `description` | text | Texto libre. Es lo que el usuario escribe y busca. |
 | `original_amount` | numeric | Tal como se pagó. |
 | `currency` | enum | `ARS` \| `USD` |
@@ -157,6 +176,8 @@ create policy "read for authenticated" on fx_rates
 Las deudas **no** entran al total de gastos. Un gasto compartido cuenta por lo que te toca a vos: el resto es una deuda a favor.
 
 ## 4. Multi-moneda
+
+Las fechas son locales y `'YYYY-MM-DD'`, y la hora viaja en su propia columna. Un `timestamptz` reintroduciría el bug que esta regla evita: un gasto del 31 de julio a las 23:00 en Buenos Aires cae en agosto si se guarda en UTC, y el total del mes queda mal.
 
 Regla: **el snapshot es inmutable**. Un gasto de USD 50 el 3 de marzo de 2024 quedó registrado a la cotización de ese día y ese `ars_amount` no se toca nunca, aunque después corrijamos la fuente de datos.
 

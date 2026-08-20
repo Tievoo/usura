@@ -22,6 +22,9 @@ export function parseDate(f: DateStr): Date {
   return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1)
 }
 
+/** El día del mes de una fecha: '2026-08-20' -> 20. */
+export const dayOf = (f: DateStr): number => Number(f.slice(8, 10))
+
 /** 'HH:MM' local, para sellar la hora de un gasto que se carga ahora. */
 export function nowTime(): string {
   const d = new Date()

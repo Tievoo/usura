@@ -4,6 +4,7 @@ import { today, nowTime } from '../lib/dates'
 import { resolveRate, DEFAULT_FX_TYPE, type ResolvedRate } from '../lib/fx'
 import { CATEGORY_BY_SLUG, EXPENSE_CATEGORIES, TOP_EXPENSE, categoryColor } from '../data/categories'
 import { PAYMENT_METHODS, type PaymentMethod, type Currency, type Transaction } from '../lib/types'
+import { useCloseOnBack } from '../lib/back'
 
 interface Props {
   open: boolean
@@ -39,6 +40,8 @@ export function ExpenseSheet({ open, userId, last, editing, onClose, onSave }: P
   /** Si no tocaste el monto al editar, se conserva exacto: los centavos del import no se pierden. */
   const [amountTouched, setAmountTouched] = useState(false)
   const saving = useRef(false)
+
+  useCloseOnBack(open, onClose)
 
   /**
    * El snapshot de cotización es inmutable y la base lo hace cumplir con un trigger:
