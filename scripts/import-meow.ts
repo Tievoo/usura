@@ -37,6 +37,7 @@ const DESDE = flag('desde')
 const HASTA = flag('hasta')
 const APLICAR = bool('apply')
 const PISAR = bool('overwrite')
+const RECLASIFICAR = bool('reclassify')
 
 if (bool('help') || (!EMAIL && !flag('user-id'))) {
   console.log(`
@@ -52,6 +53,10 @@ Uso:
   --overwrite        Pisa los movimientos ya importados (reclasificar con reglas
                      nuevas). Sin esto, solo se insertan los que faltan y no se
                      tocan las correcciones que hiciste desde la app.
+  --reclassify       No inserta nada: compara la clasificación que dan las reglas
+                     contra la base y actualiza solo categoría, subcategoría y
+                     etiquetas de las filas que cambian. Montos y fechas no se
+                     tocan. Es lo que hay que correr después de afinar una regla.
 `)
   process.exit(bool('help') ? 0 : 1)
 }
@@ -161,6 +166,66 @@ CSV: ${CSV}
   cuotas detectadas   ${s.cuotasDetectadas}   (no se arma la serie: falta la tabla de recurrentes)
   rango               ${s.rango?.desde} → ${s.rango?.hasta}
 `)
+
+/* ---------- modo reclasificar ---------- */
+
+if (RECLASIFICAR) {
+  const out = await sh([
+    'bun', 'x', 'supabase', 'db', 'query', '--linked',
+    `select id, category, subcategory, notes from public.transactions
+       where source = 'meow_import' and user_id = '${userId}'`,
+  ])
+  const json = JSON.parse(out.slice(out.indexOf('{'))) as {
+    rows: { id: string; category: string; subcategory: string | null; notes: string | null }[]
+  }
+  const enBase = new Map(json.rows.map((r) => [r.id, r]))
+  console.log(`filas en la base: ${enBase.size}`)
+
+  const cambios = res.transactions.filter((t) => {
+    const b = enBase.get(t.id)
+    // Lo que no está en la base no se toca acá: para eso está el import normal.
+    if (!b) return false
+    return b.category !== t.category || b.subcategory !== t.subcategory || b.notes !== t.notes
+  })
+
+  if (!cambios.length) {
+    console.log('\nNada que reclasificar: las reglas dan lo mismo que ya está guardado.')
+    process.exit(0)
+  }
+
+  console.log(`\n${cambios.length} movimientos cambian de clasificación:\n`)
+  for (const t of cambios) {
+    const b = enBase.get(t.id)!
+    const antes = `${b.category}${b.subcategory ? ' > ' + b.subcategory : ''}`
+    const ahora = `${t.category}${t.subcategory ? ' > ' + t.subcategory : ''}`
+    const desc = (t.description || '(sin descripción)').slice(0, 42).padEnd(42)
+    console.log(`  ${t.date}  ${desc}  ${antes}  ->  ${ahora}`)
+  }
+
+  const updates = [
+    '-- Reclasificación generada por scripts/import-meow.ts --reclassify.',
+    '-- Solo toca category, subcategory y notes.',
+    'begin;',
+    ...cambios.map((t) =>
+      `update public.transactions set category = ${q(t.category)}, ` +
+      `subcategory = ${q(t.subcategory)}, notes = ${q(t.notes)} where id = ${q(t.id)};`),
+    'commit;',
+    '',
+  ].join('\n')
+
+  const rutaUpd = SALIDA.replace(/\.sql$/, '-reclassify.sql')
+  await Bun.write(rutaUpd, updates)
+  console.log(`\nSQL escrito en ${rutaUpd}`)
+
+  if (!APLICAR) {
+    console.log(`\nNo se aplicó nada. Para aplicarlo, agregá --apply.`)
+    process.exit(0)
+  }
+  console.log('\nAplicando…')
+  await sh(['bun', 'x', 'supabase', 'db', 'query', '--linked', '-f', rutaUpd])
+  console.log('Aplicado.')
+  process.exit(0)
+}
 
 const sql = generarSql(res)
 await Bun.write(SALIDA, sql)

@@ -183,7 +183,7 @@ function subTecnologia(c: string): string | null {
 
 /** §5.6 — desarme de `Varios`. Devuelve null si ninguna regla aplica. */
 function claseVarios(c: string): Clasificacion | null {
-  if (has(c, 'ytp|yt prem|ytpremium|youtube')) return cat('suscripciones', 'streaming')
+  if (has(c, 'ytp|yt pr|ytpremium|youtube')) return cat('suscripciones', 'streaming')
   if (has(c, 'crunchyroll|runchyroll')) return cat('suscripciones', 'streaming')
   if (has(c, 'meli|ml nivel|mp nivel|mercalibre')) return cat('suscripciones', 'servicios-digitales')
   if (has(c, 'figma|calm|stats fm|google one|dateas|djfumsdote|los datos|calcu')) return cat('suscripciones', 'software')
@@ -205,6 +205,17 @@ function claseVarios(c: string): Clasificacion | null {
   if (has(c, 'aritos|altitude|brth|don rouch')) return cat('ropa', 'accesorios-ropa')
   if (has(c, 'manga|rifas|regale')) return cat('regalos', 'regalos')
   if (has(c, 'burger|cafecito|chino')) return cat('comida', subComida(c))
+  if (has(c, 'propina')) return cat('comida', 'propina')
+  if (has(c, 'juntada')) return cat('comida', 'restaurante')
+  // Los ingredientes de un postre son super; comerse el postre es `Comida`. El
+  // patrón va con la frase completa porque 'mousse' solo se lleva puestas las
+  // filas de postre comido.
+  if (has(c, 'cosas de la mousse')) return cat('super', 'super')
+  if (has(c, 'funda')) return cat('tecnologia', 'accesorios')
+  // El service del auto de la madre: gasto de mantenimiento igual, con #familia.
+  if (has(c, 'service de mam')) return cat('transporte', 'mantenimiento')
+  // El prode es timba con amigos, no casino.
+  if (has(c, 'prode')) return cat('apuestas', 'timba')
   return null
 }
 
@@ -290,7 +301,13 @@ function claseGasto(categoria: string, c: string): Clasificacion {
       return v ?? cat('comida', subComida(c))
     }
 
-    case 'me la mande':
+    // `Me la mande` marca un error, no una categoría: si el comentario alcanza
+    // para clasificar, se usa, y si no queda para revisar.
+    case 'me la mande': {
+      const v = claseVarios(c)
+      return v ?? { ...cat('otros', 'sin-categorizar'), tags: ['revisar'] }
+    }
+
     case 'cambio':
       return { ...cat('otros', 'sin-categorizar'), tags: ['revisar'] }
 
