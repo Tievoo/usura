@@ -287,3 +287,29 @@ button { font-family: inherit; color: inherit; }
 
 /* El monto de un ingreso en el detalle usa el semántico, no el ámbar. */
 .monto .v.ingreso { color: var(--positive); }
+
+/* ---------- carrusel de pestañas ---------- */
+/*
+ * Las cuatro pestañas viven en una pista y lo que se mueve es la pista, no cada
+ * pantalla. Así el swipe arrastra algo real en vez de reemplazar una pantalla por
+ * otra, y el gesto y la animación son la misma cosa.
+ *
+ * `min-height: 0` en los dos niveles es lo que deja que el `.feed` de adentro
+ * scrollee: sin eso, un hijo flex se niega a encogerse por debajo de su contenido
+ * y el scroll se va al contenedor equivocado.
+ */
+.track {
+  flex: 1; min-height: 0;
+  display: flex;
+  transition: transform var(--dur-sheet) var(--ease);
+  will-change: transform;
+}
+.pane {
+  flex: 0 0 100%; min-width: 0; min-height: 0;
+  display: flex; flex-direction: column;
+}
+
+/* Respetar a quien pidió menos movimiento en el sistema. */
+@media (prefers-reduced-motion: reduce) {
+  .track { transition: none; }
+}

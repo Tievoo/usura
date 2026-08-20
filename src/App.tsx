@@ -31,8 +31,11 @@ export function App() {
   const gesto = useRef<{ x: number; y: number; t: number } | null>(null)
 
   function alTocar(e: React.TouchEvent) {
-    // Dentro de una hoja o su fondo, el swipe no cambia de pestaña.
+    // Dentro de una hoja o su fondo, el swipe no cambia de pestaña. Y con una hoja
+    // abierta tampoco, aunque el gesto arranque en el header: la pista se movería
+    // llevándose el modal puesto.
     if ((e.target as HTMLElement).closest('.sheet, .scrim')) { gesto.current = null; return }
+    if (document.querySelector('.sheet.on')) { gesto.current = null; return }
     const p = e.touches[0]
     gesto.current = p ? { x: p.clientX, y: p.clientY, t: Date.now() } : null
   }
@@ -93,27 +96,50 @@ export function App() {
 
   const status = { online, pending, error: syncError }
 
-  return (
-    <div className="app" onTouchStart={alTocar} onTouchEnd={alSoltar}>
-      {tab === 'transactions' && <Transactions userId={session.user.id} status={status} />}
-      {tab === 'analytics' && (
+  const indice = ORDEN.indexOf(tab)
+
+  // Las cuatro montadas: lo que se anima es el desplazamiento de la pista, así que
+  // la pantalla que entra tiene que existir antes de entrar.
+  const paneles: { id: Tab; contenido: React.ReactNode }[] = [
+    { id: 'transactions', contenido: <Transactions userId={session.user.id} status={status} /> },
+    {
+      id: 'analytics',
+      contenido: (
         <ComingSoon
           title="Análisis"
           text="El gasto por categoría, por mes y por año llega en una próxima iteración. Todo lo que cargues ya queda listo para aparecer acá."
         />
-      )}
-      {tab === 'recurring' && (
+      ),
+    },
+    {
+      id: 'recurring',
+      contenido: (
         <ComingSoon
           title="Recurrentes"
           text="Suscripciones y cuotas, generándose solas en su fecha. Todavía no está."
         />
-      )}
-      {tab === 'debts' && (
+      ),
+    },
+    {
+      id: 'debts',
+      contenido: (
         <ComingSoon
           title="Deudas"
           text="Quién te debe y a quién le debés, más el import de Splitwise. Todavía no está."
         />
-      )}
+      ),
+    },
+  ]
+
+  return (
+    <div className="app" onTouchStart={alTocar} onTouchEnd={alSoltar}>
+      <div className="track" style={{ transform: `translateX(${indice * -100}%)` }}>
+        {paneles.map((p) => (
+          <section key={p.id} className="pane" aria-hidden={p.id !== tab}>
+            {p.contenido}
+          </section>
+        ))}
+      </div>
       <TabBar active={tab} onChange={setTab} />
     </div>
   )
