@@ -1,12 +1,15 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { transactionsBetween, transactionsOfMonth } from '../lib/db'
 import {
   currentMonth, monthName, monthYearName, prevMonth, nextMonth,
-  today, dayOf, monthRange, type MonthStr,
+  today, dayOf, monthRange, dayHeading, type MonthStr,
 } from '../lib/dates'
-import { format, type Cents } from '../lib/money'
-import type { Transaction } from '../lib/types'
+import { format, formatUsd, type Cents } from '../lib/money'
+import { net, paymentMethodLabel, type Transaction } from '../lib/types'
+import { categoryName, subcategoryName } from '../data/categories'
+import { useCloseOnBack } from '../lib/back'
 import {
   porCategoria, porSubcategoria, serieMensual, totalHasta,
   totalGastos, totalIngresos, type Tajada,
@@ -14,33 +17,46 @@ import {
 
 type Modo = 'mes' | 'anio'
 
-/** Los doce meses que terminan en `hasta`, del más viejo al más nuevo. */
-function ultimosDoce(hasta: MonthStr): MonthStr[] {
+/** Cuántos meses muestra la tira en modo mes. Scrollea, así que puede ser larga. */
+const VENTANA = 24
+
+/** Los N meses que terminan en `hasta`, del más viejo al más nuevo. */
+function ultimos(hasta: MonthStr, n: number): MonthStr[] {
   const out: MonthStr[] = [hasta]
-  for (let i = 0; i < 11; i++) out.unshift(prevMonth(out[0]!))
+  for (let i = 0; i < n - 1; i++) out.unshift(prevMonth(out[0]!))
   return out
 }
 
 const anioDe = (m: MonthStr) => m.slice(0, 4)
 
+/** Qué se está mirando en la hoja de movimientos. */
+interface Drill {
+  category: string
+  subcategory: string | null
+}
+
 /**
  * Análisis. Lee lo que ya está en Dexie, así que no hay un total precomputado que
  * pueda contradecir a la lista de movimientos.
  *
- * El desglose es una lista rankeada con barras y no una torta: la paleta de
- * categorías tiene pares que no se distinguen —`impuestos` con `hogar`, `bebidas`
- * con `super` en deuteranopía—, y en una torta el color es la única pista de quién
- * es quién. Acá cada fila lleva su nombre y la barra solo refuerza la magnitud.
+ * El desglose es una lista rankeada y no una torta: la paleta de categorías tiene
+ * pares que no se distinguen —`impuestos` con `hogar`, `bebidas` con `super` en
+ * deuteranopía—, y en una torta el color es la única pista de quién es quién. Acá
+ * cada fila lleva su nombre y la barra solo refuerza la magnitud.
  */
 export function Analytics() {
   const [modo, setModo] = useState<Modo>('mes')
   const [ancla, setAncla] = useState<MonthStr>(currentMonth())
   const [abierta, setAbierta] = useState<string | null>(null)
+  const [drill, setDrill] = useState<Drill | null>(null)
+  const tira = useRef<HTMLDivElement | null>(null)
+
+  const [shell, setShell] = useState<HTMLElement | null>(null)
+  useEffect(() => setShell(document.getElementById('app-shell')), [])
 
   const anio = anioDe(ancla)
   const esMes = modo === 'mes'
 
-  // Rango del período y del anterior, para comparar.
   const [desde, hasta] = esMes ? monthRange(ancla) : [`${anio}-01-01`, `${anio}-12-31`]
   const anioAnt = String(Number(anio) - 1)
   const [desdeAnt, hastaAnt] = esMes
@@ -55,42 +71,46 @@ export function Analytics() {
     () => transactionsBetween(desdeAnt, hastaAnt),
     [desdeAnt, hastaAnt], [] as Transaction[],
   )
+
   /**
-   * En modo mes, los doce que terminan en el mes que mirás. En modo año, los doce
-   * del año: anclar al mes ahí mostraría meses del año anterior.
+   * La ventana de la tira **no** se mueve con el mes elegido: se ancla al mes
+   * corriente. Anclarla a la selección hacía que el mes que tocabas quedara
+   * siempre último, así que el gráfico se reordenaba abajo de tu dedo.
    */
-  const doce = useMemo(
-    () => (esMes ? ultimosDoce(ancla) : Array.from({ length: 12 }, (_, i) => `${anio}-${String(i + 1).padStart(2, '0')}`)),
-    [esMes, ancla, anio],
+  const meses = useMemo(
+    () => (esMes
+      ? ultimos(currentMonth(), VENTANA)
+      : Array.from({ length: 12 }, (_, i) => `${anio}-${String(i + 1).padStart(2, '0')}`)),
+    [esMes, anio],
   )
-  const tsDoce = useLiveQuery(
-    () => transactionsBetween(`${doce[0]}-01`, `${doce[11]}-31`),
-    [doce], [] as Transaction[],
+  const tsTira = useLiveQuery(
+    () => transactionsBetween(`${meses[0]}-01`, `${meses[meses.length - 1]}-31`),
+    [meses], [] as Transaction[],
   )
 
   const total = useMemo(() => totalGastos(periodo), [periodo])
   const ingresos = useMemo(() => totalIngresos(periodo), [periodo])
   const cats = useMemo(() => porCategoria(periodo), [periodo])
-  const serie = useMemo(() => serieMensual(tsDoce, doce), [tsDoce, doce])
+  const serie = useMemo(() => serieMensual(tsTira, meses), [tsTira, meses])
 
-  /**
-   * Si el período está en curso, el anterior se corta a la misma altura. Comparar
-   * 20 días contra 31 —o cuatro meses contra doce— inventa una caída que no existe.
-   */
+  // Arranca mostrando lo más reciente, que es el extremo derecho.
+  useEffect(() => {
+    const el = tira.current
+    if (el) el.scrollLeft = el.scrollWidth
+  }, [meses])
+
   const enCurso = esMes ? ancla === currentMonth() : anio === anioDe(currentMonth())
   const corte = !enCurso ? null : esMes ? today().slice(8, 10) : today().slice(5, 10)
   const largo = esMes ? 2 : 5
-  const totalAnterior = useMemo(
-    () => totalHasta(anterior, corte, largo),
-    [anterior, corte, largo],
-  )
+  const totalAnterior = useMemo(() => totalHasta(anterior, corte, largo), [anterior, corte, largo])
 
   const pct = totalAnterior > 0 && total > 0
     ? Math.round((Math.abs(total - totalAnterior) / totalAnterior) * 100)
     : null
   const menos = total < totalAnterior
-  const topeSerie = Math.max(...serie.map((p) => p.total), 1)
+  const tope = Math.max(...serie.map((p) => p.total), 1)
   const etiquetaAnterior = esMes ? monthName(prevMonth(ancla)) : anioAnt
+  const alFinal = esMes ? ancla >= currentMonth() : anio >= anioDe(currentMonth())
 
   function moverPeriodo(dir: -1 | 1) {
     setAbierta(null)
@@ -103,7 +123,14 @@ export function Analytics() {
     if (y <= Number(anioDe(currentMonth()))) setAncla(`${y}-01`)
   }
 
-  const alFinal = esMes ? ancla >= currentMonth() : anio >= anioDe(currentMonth())
+  const delDrill = useMemo(() => {
+    if (!drill) return []
+    return periodo
+      .filter((t) => t.type === 'expense'
+        && t.category === drill.category
+        && (drill.subcategory === null || t.subcategory === drill.subcategory))
+      .sort((a, b) => (a.date === b.date ? (b.time ?? '').localeCompare(a.time ?? '') : b.date.localeCompare(a.date)))
+  }, [periodo, drill])
 
   return (
     <>
@@ -138,14 +165,12 @@ export function Analytics() {
       </header>
 
       <div className="feed">
-        {/* Tendencia: una sola serie, así que un solo color y sin leyenda. */}
+        {/* Una sola serie: un color y sin leyenda. */}
         <div className="an-sec">
-          <span className="u-micro">{esMes ? 'Últimos 12 meses' : `Los 12 meses de ${anio}`}</span>
-          <div className="an-trend" role="img"
-            aria-label={`Gasto de los últimos 12 meses, de ${monthYearName(doce[0]!)} a ${monthYearName(ancla)}`}>
+          <span className="u-micro">{esMes ? `Últimos ${VENTANA} meses` : `Los 12 meses de ${anio}`}</span>
+          <div className="an-trend" ref={tira} role="img"
+            aria-label={`Gasto mensual de ${monthYearName(meses[0]!)} a ${monthYearName(meses[meses.length - 1]!)}`}>
             {serie.map((p) => {
-              // En modo año los doce son del año, así que resaltar por año resaltaría
-              // todo: se marca el mes corriente si cae adentro.
               const activo = esMes ? p.month === ancla : p.month === currentMonth()
               return (
                 <button
@@ -155,7 +180,7 @@ export function Analytics() {
                   onClick={() => { setModo('mes'); setAncla(p.month); setAbierta(null) }}
                   title={`${monthYearName(p.month)}: $${format(p.total)}`}
                 >
-                  <i style={{ height: `${Math.max(2, Math.round((p.total / topeSerie) * 100))}%` }} />
+                  <i style={{ height: `${Math.max(2, Math.round((p.total / tope) * 100))}%` }} />
                   <em>{monthName(p.month).slice(0, 3)}</em>
                 </button>
               )
@@ -177,6 +202,7 @@ export function Analytics() {
                   abierta={abierta === c.slug}
                   onAbrir={() => setAbierta(abierta === c.slug ? null : c.slug)}
                   subs={abierta === c.slug ? porSubcategoria(periodo, c.slug) : null}
+                  onVer={(sub) => setDrill({ category: c.slug, subcategory: sub })}
                 />
               ))}
             </div>
@@ -193,16 +219,27 @@ export function Analytics() {
           </div>
         )}
       </div>
+
+      {shell && createPortal(
+        <DrillSheet
+          drill={drill}
+          transactions={delDrill}
+          periodo={esMes ? monthYearName(ancla) : anio}
+          onClose={() => setDrill(null)}
+        />,
+        shell,
+      )}
     </>
   )
 }
 
-function Fila({ t, tope, abierta, onAbrir, subs }: {
+function Fila({ t, tope, abierta, onAbrir, subs, onVer }: {
   t: Tajada
   tope: Cents
   abierta: boolean
   onAbrir: () => void
   subs: Tajada[] | null
+  onVer: (sub: string | null) => void
 }) {
   return (
     <>
@@ -214,17 +251,87 @@ function Fila({ t, tope, abierta, onAbrir, subs }: {
           <i style={{ width: `${Math.max(1, Math.round((t.total / tope) * 100))}%`, background: t.color }} />
         </span>
       </button>
+
       {abierta && subs && (
         <div className="an-subs">
           {subs.map((s) => (
-            <div key={s.slug} className="an-sub">
+            <button
+              key={s.slug}
+              type="button"
+              className="an-sub"
+              onClick={() => onVer(s.slug === '(sin)' ? null : s.slug)}
+            >
               <span className="an-nm">{s.name}</span>
               <span className="an-v">{format(s.total)}</span>
               <span className="an-pct">{Math.round(s.share * 100)}%</span>
+            </button>
+          ))}
+          <div className="an-acciones">
+            <button type="button" className="chip" onClick={() => onVer(null)}>
+              Ver los {t.count} {t.count === 1 ? 'movimiento' : 'movimientos'}
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+/** Hoja con los movimientos de una categoría o subcategoría del período. */
+function DrillSheet({ drill, transactions, periodo, onClose }: {
+  drill: Drill | null
+  transactions: Transaction[]
+  periodo: string
+  onClose: () => void
+}) {
+  const open = !!drill
+  useCloseOnBack(open, onClose)
+
+  const titulo = drill
+    ? drill.subcategory
+      ? `${categoryName(drill.category)} · ${subcategoryName(drill.category, drill.subcategory) ?? drill.subcategory}`
+      : categoryName(drill.category)
+    : ''
+  const total = transactions.reduce((a, t) => a + net(t), 0)
+
+  return (
+    <>
+      <div className={'scrim' + (open ? ' on' : '')} onClick={onClose} />
+      <section className={'sheet dr' + (open ? ' on' : '')} aria-label="Movimientos de la categoría" aria-hidden={!open}>
+        <div className="grab"><i /></div>
+
+        <div className="dr-hd">
+          <div>
+            <span className="u-micro">{periodo}</span>
+            <b>{titulo}</b>
+          </div>
+          <span className="dr-total">{format(total)}</span>
+        </div>
+
+        <div className="dr-lista">
+          {transactions.map((t) => (
+            <div key={t.id} className="dr-fila">
+              <span className="dr-body">
+                <span className="dr-nm">{t.description || categoryName(t.category)}</span>
+                <span className="dr-sub">
+                  {dayHeading(t.date)}{t.time ? ` · ${t.time}` : ''} · {paymentMethodLabel(t.paymentMethod)}
+                </span>
+              </span>
+              <span className="dr-v">
+                {format(net(t))}
+                {t.currency === 'USD' && <em>{formatUsd(t.originalAmount)}</em>}
+              </span>
             </div>
           ))}
         </div>
-      )}
+
+        <div className="det-acciones">
+          <span className="det-preg">
+            Desde acá solo se mira. Para editar, andá a Movimientos.
+          </span>
+          <button type="button" className="chip" onClick={onClose}>Cerrar</button>
+        </div>
+      </section>
     </>
   )
 }

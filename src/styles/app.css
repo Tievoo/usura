@@ -331,9 +331,16 @@ button { font-family: inherit; color: inherit; }
 .an-vacio { margin: 0; font-size: var(--t-body-s); color: var(--text-3); }
 
 /* ---- tendencia: una sola serie, un solo color ---- */
-.an-trend { display: flex; align-items: flex-end; gap: 2px; height: 92px; }
+.an-trend {
+  display: flex; align-items: flex-end; gap: 2px; height: 92px;
+  overflow-x: auto; overscroll-behavior-x: contain;
+  /* El gesto horizontal del gráfico es del gráfico, no del carrusel de pestañas. */
+  touch-action: pan-x;
+}
 .an-bar {
-  flex: 1; min-width: 0; height: 100%; padding: 0; cursor: pointer;
+  /* Crece si sobra lugar, pero nunca baja de 30px: con doce etiquetas de mes en
+     una pantalla angosta se pisaban entre sí. */
+  flex: 1 0 30px; height: 100%; padding: 0; cursor: pointer;
   background: none; border: 0;
   display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; gap: 5px;
 }
@@ -363,23 +370,31 @@ button { font-family: inherit; color: inherit; }
   text-align: left;
 }
 .an-lista .an-fila:first-child { border-top: 0; }
-.an-nm { grid-area: nm; font-size: var(--t-body-s); color: var(--text); }
+/*
+ * Las áreas nombradas van scopeadas a `.an-fila`. Sin el scope, `.an-sub` —que es
+ * un grid de tres columnas sin áreas nombradas— recibía `grid-area: nm` y el
+ * navegador creaba tracks implícitos, desarmando la fila.
+ */
+.an-nm { font-size: var(--t-body-s); color: var(--text); }
 .an-v {
-  grid-area: v; font-family: var(--font-figure); font-size: var(--t-figure-s);
+  font-family: var(--font-figure); font-size: var(--t-figure-s);
   font-variant-numeric: tabular-nums; color: var(--text);
 }
 .an-pct {
-  grid-area: pct; min-width: 30px; text-align: right;
+  min-width: 34px; text-align: right;
   font-family: var(--font-figure); font-size: var(--t-figure-s);
   font-variant-numeric: tabular-nums; color: var(--text-3);
 }
+.an-fila > .an-nm { grid-area: nm; }
+.an-fila > .an-v { grid-area: v; }
+.an-fila > .an-pct { grid-area: pct; }
 .an-track { grid-area: track; height: 3px; background: var(--surface-2); border-radius: var(--r-xs); overflow: hidden; }
 .an-track i { display: block; height: 100%; border-radius: var(--r-xs); }
 
 .an-subs { padding: 2px 0 8px 0; }
 .an-sub {
-  display: grid; grid-template-columns: 1fr auto auto; gap: 10px;
-  padding: 5px 0 5px 12px; border-left: 1px solid var(--rule);
+  display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: baseline;
+  padding: 6px 0 6px 12px; border-left: 1px solid var(--rule);
 }
 .an-sub .an-nm { font-size: var(--t-body-s); color: var(--text-2); }
 .an-sub .an-v, .an-sub .an-pct { color: var(--text-2); }
@@ -390,3 +405,51 @@ button { font-family: inherit; color: inherit; }
   font-variant-numeric: tabular-nums; color: var(--positive);
 }
 .an-ingreso em { font-style: normal; font-size: var(--t-body-s); color: var(--text-3); }
+
+/* La subfila es un botón: abre los movimientos de esa subcategoría. */
+.an-sub {
+  width: 100%; text-align: left; cursor: pointer;
+  background: none; border: 0; border-left: 1px solid var(--rule);
+  font: inherit;
+}
+.an-sub:hover { border-left-color: var(--text-3); }
+.an-sub:hover .an-nm { color: var(--text); }
+.an-acciones { padding: 8px 0 2px 12px; }
+
+/* ---------- hoja de movimientos de una categoría ---------- */
+/*
+ * Cabecera y acciones quedan fijas y solo scrollea la lista: una categoría con
+ * cien movimientos no puede empujar el botón de cerrar fuera de la pantalla.
+ */
+.sheet.dr {
+  max-height: 88%; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.dr-hd {
+  flex: none; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
+  padding: 0 var(--pad-screen) 12px;
+}
+.dr-hd .u-micro { display: block; margin-bottom: 4px; text-transform: capitalize; }
+.dr-hd b { font-size: var(--t-body); font-weight: var(--w-medium); color: var(--text); }
+.dr-total {
+  flex: none; font-family: var(--font-figure); font-size: var(--t-figure);
+  font-variant-numeric: tabular-nums; color: var(--amber);
+}
+
+.dr-lista { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.dr-fila {
+  display: flex; align-items: center; gap: 10px;
+  min-height: var(--h-row); padding: var(--pad-row-y) var(--pad-screen);
+  border-top: 1px solid var(--rule);
+}
+.dr-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.dr-nm {
+  font-size: var(--t-body-s); color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.dr-sub { font-size: 10.5px; color: var(--text-3); }
+.dr-v {
+  flex: none; text-align: right; font-family: var(--font-figure); font-size: var(--t-figure-s);
+  font-variant-numeric: tabular-nums; color: var(--text);
+}
+.dr-v em { display: block; font-style: normal; font-size: 9.5px; color: var(--text-3); margin-top: 2px; }

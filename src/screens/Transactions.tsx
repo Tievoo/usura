@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { MonthHeader } from '../components/MonthHeader'
 import { TransactionList } from '../components/TransactionList'
@@ -23,6 +24,14 @@ export function Transactions({ userId, status }: Props) {
   /** El que se está editando en la hoja. null = alta nueva. */
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  /**
+   * Los overlays van por portal al shell de la app. `.panes` tiene `transform` y
+   * eso lo convierte en bloque contenedor de sus descendientes absolutos: la hoja
+   * con `bottom: 0` medía contra la pista, que termina arriba de la tab bar, así
+   * que aparecía flotando en vez de cubrirla.
+   */
+  const [shell, setShell] = useState<HTMLElement | null>(null)
+  useEffect(() => setShell(document.getElementById('app-shell')), [])
 
   const ofMonth = useLiveQuery(() => transactionsOfMonth(month), [month], [] as Transaction[])
   const ofPrevious = useLiveQuery(() => transactionsOfMonth(prevMonth(month)), [month], [] as Transaction[])
@@ -120,25 +129,30 @@ export function Transactions({ userId, status }: Props) {
         onAdd={nuevo}
       />
 
-      <button type="button" className="fab" onClick={nuevo} aria-label="Cargar gasto">+</button>
+      {shell && createPortal(
+        <>
+          <button type="button" className="fab" onClick={nuevo} aria-label="Cargar gasto">+</button>
 
-      <TransactionDetail
-        transaction={detail}
-        onClose={() => setDetail(null)}
-        onEdit={handleEdit}
-        onArchive={(t) => void handleArchive(t)}
-      />
+          <TransactionDetail
+            transaction={detail}
+            onClose={() => setDetail(null)}
+            onEdit={handleEdit}
+            onArchive={(t) => void handleArchive(t)}
+          />
 
-      <ExpenseSheet
-        open={sheet}
-        userId={userId}
-        last={last}
-        editing={editing}
-        onClose={() => { setSheet(false); setEditing(null) }}
-        onSave={(t) => void handleSave(t)}
-      />
+          <ExpenseSheet
+            open={sheet}
+            userId={userId}
+            last={last}
+            editing={editing}
+            onClose={() => { setSheet(false); setEditing(null) }}
+            onSave={(t) => void handleSave(t)}
+          />
 
-      <div className={'toast' + (toast ? ' on' : '')}>{toast}</div>
+          <div className={'toast' + (toast ? ' on' : '')}>{toast}</div>
+        </>,
+        shell,
+      )}
     </>
   )
 }

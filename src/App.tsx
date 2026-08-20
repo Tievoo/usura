@@ -35,7 +35,8 @@ export function App() {
     // Dentro de una hoja o su fondo, el swipe no cambia de pestaña. Y con una hoja
     // abierta tampoco, aunque el gesto arranque en el header: la pista se movería
     // llevándose el modal puesto.
-    if ((e.target as HTMLElement).closest('.sheet, .scrim')) { gesto.current = null; return }
+    // La tira de meses scrollea horizontal: ese gesto es del gráfico, no del carrusel.
+    if ((e.target as HTMLElement).closest('.sheet, .scrim, .an-trend')) { gesto.current = null; return }
     if (document.querySelector('.sheet.on')) { gesto.current = null; return }
     const p = e.touches[0]
     gesto.current = p ? { x: p.clientX, y: p.clientY, t: Date.now() } : null
@@ -125,7 +126,10 @@ export function App() {
   ]
 
   return (
-    <div className="app" onTouchStart={alTocar} onTouchEnd={alSoltar}>
+    // El id es el destino del portal de overlays: la hoja, el scrim, el FAB y el
+    // toast se posicionan contra el shell y no pueden vivir dentro de `.panes`,
+    // que al tener `transform` se vuelve su bloque contenedor.
+    <div className="app" id="app-shell" onTouchStart={alTocar} onTouchEnd={alSoltar}>
       <div className="panes" style={{ transform: `translateX(${indice * -100}%)` }}>
         {paneles.map((p) => (
           <section key={p.id} className="pane" aria-hidden={p.id !== tab}>
