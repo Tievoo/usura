@@ -22,6 +22,7 @@ function toRow(t: Transaction): TransactionRow {
     user_id: t.userId,
     type: t.type,
     date: t.date,
+    time: t.time,
     description: t.description,
     original_amount: toNumeric(t.originalAmount),
     currency: t.currency,
@@ -47,6 +48,8 @@ function fromRow(r: TransactionRow): Transaction {
     userId: r.user_id,
     type: r.type as TransactionType,
     date: r.date,
+    // Postgres devuelve 'HH:MM:SS'; la app trabaja con 'HH:MM'.
+    time: r.time ? r.time.slice(0, 5) : null,
     description: r.description,
     originalAmount: fromNumeric(r.original_amount),
     currency: r.currency as Currency,

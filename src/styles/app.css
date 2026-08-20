@@ -240,3 +240,50 @@ button { font-family: inherit; color: inherit; }
 .login .msg.error { color: var(--negative); }
 .login .marca { display: flex; align-items: baseline; gap: 8px; }
 .login .marca span { font-size: var(--t-micro); text-transform: uppercase; letter-spacing: var(--tr-micro); color: var(--text-3); }
+
+/* ---------- fecha y hora en la hoja de gasto ---------- */
+.sec.cuando { display: flex; gap: 8px; }
+.sec.cuando label { flex: 1; display: block; }
+.sec.cuando label > .u-micro { display: block; margin-bottom: 6px; }
+.sec.cuando input {
+  width: 100%; height: var(--h-control); box-sizing: border-box;
+  padding: 0 10px; color: var(--text);
+  background: var(--surface-2); border: 1px solid var(--rule); border-radius: var(--r-sm);
+  font-family: var(--font-figure); font-size: var(--t-figure-s); font-variant-numeric: tabular-nums;
+}
+.sec.cuando input:focus { outline: none; border-color: var(--rule-strong); }
+
+/* ---------- detalle del movimiento ---------- */
+.det { margin: 0; padding: 0 var(--pad-screen) 4px; }
+.det > div {
+  display: flex; align-items: baseline; gap: 12px;
+  padding: 9px 0; border-top: 1px solid var(--rule);
+}
+.det dt {
+  flex: none; width: 116px;
+  font-size: var(--t-micro); letter-spacing: var(--tr-micro); text-transform: uppercase;
+  color: var(--text-3);
+}
+.det dd {
+  margin: 0; flex: 1; font-size: var(--t-body-s); color: var(--text);
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+}
+.det dd.cifra { font-family: var(--font-figure); font-variant-numeric: tabular-nums; }
+.det dd.vacia { color: var(--text-3); }
+.det .pun { width: 8px; height: 8px; border-radius: var(--r-xs); flex: none; }
+
+.det-acciones {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 12px var(--pad-screen) calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--rule);
+}
+.det-preg { flex: 1; font-size: var(--t-body-s); color: var(--text-2); }
+.det-acciones .chip.primario {
+  margin-left: auto;
+  background: var(--amber); border-color: var(--amber); color: var(--amber-ink);
+  font-weight: var(--w-semi);
+}
+.det-acciones .chip.peligro { border-color: var(--negative); color: var(--negative); }
+
+/* El monto de un ingreso en el detalle usa el semántico, no el ámbar. */
+.monto .v.ingreso { color: var(--positive); }

@@ -11,8 +11,10 @@
  * No hace falta ninguna credencial nueva: usa las que `supabase link` dejó
  * cacheadas. La secret key no se toca.
  *
- * El SQL es idempotente (`on conflict (id) do update`), y los ids salen de un
- * hash de cada fila del CSV, así que correrlo dos veces no duplica nada.
+ * Los ids salen de un hash de cada fila del CSV, así que correrlo dos veces no
+ * duplica nada. Por defecto los que ya están no se tocan (`do nothing`): un CSV
+ * más nuevo agrega lo que falta sin pisar lo que corregiste desde la app. Con
+ * `--overwrite` sí se pisan, para reclasificar con reglas nuevas.
  */
 
 import { importarMeow, type ResultadoImport } from '../src/lib/meow'
@@ -34,6 +36,7 @@ const SALIDA = flag('out') ?? 'scripts/.out/import-meow.sql'
 const DESDE = flag('desde')
 const HASTA = flag('hasta')
 const APLICAR = bool('apply')
+const PISAR = bool('overwrite')
 
 if (bool('help') || (!EMAIL && !flag('user-id'))) {
   console.log(`
@@ -46,6 +49,9 @@ Uso:
   --desde <YYYY-MM-DD> / --hasta <YYYY-MM-DD>   Acotan el rango. Default: todo.
   --out <ruta>       Dónde dejar el SQL. Default: scripts/.out/import-meow.sql
   --apply            Aplica el SQL además de generarlo.
+  --overwrite        Pisa los movimientos ya importados (reclasificar con reglas
+                     nuevas). Sin esto, solo se insertan los que faltan y no se
+                     tocan las correcciones que hiciste desde la app.
 `)
   process.exit(bool('help') ? 0 : 1)
 }
@@ -84,13 +90,13 @@ async function resolverUserId(): Promise<string> {
 /* ---------- SQL ---------- */
 
 const COLUMNAS = [
-  'id', 'user_id', 'type', 'date', 'description', 'original_amount', 'currency',
+  'id', 'user_id', 'type', 'date', 'time', 'description', 'original_amount', 'currency',
   'ars_amount', 'fx_rate', 'fx_type', 'fx_date', 'category', 'subcategory',
   'payment_method', 'refund_ars', 'notes', 'source', 'created_at', 'updated_at',
 ]
 
 const fila = (t: Transaction): string => `(${[
-  q(t.id), q(t.userId), q(t.type), q(t.date), q(t.description),
+  q(t.id), q(t.userId), q(t.type), q(t.date), q(t.time), q(t.description),
   num(t.originalAmount), q(t.currency), num(t.arsAmount),
   num(t.fxRate), q(t.fxType), q(t.fxDate),
   q(t.category), q(t.subcategory), q(t.paymentMethod),
@@ -114,13 +120,19 @@ function generarSql(res: ResultadoImport): string {
     partes.push(
       `insert into public.transactions (${COLUMNAS.join(', ')}) values`,
       tanda.map(fila).join(',\n'),
-      `on conflict (id) do update set
-  type = excluded.type, date = excluded.date, description = excluded.description,
-  original_amount = excluded.original_amount, currency = excluded.currency,
-  ars_amount = excluded.ars_amount, category = excluded.category,
-  subcategory = excluded.subcategory, payment_method = excluded.payment_method,
-  refund_ars = excluded.refund_ars, notes = excluded.notes, source = excluded.source,
-  deleted_at = null;`,
+      PISAR
+        // Con --overwrite se reclasifica lo ya importado. `deleted_at` queda afuera
+        // a propósito: lo que archivaste no revive porque se reimporte el CSV.
+        ? `on conflict (id) do update set
+  type = excluded.type, date = excluded.date, time = excluded.time,
+  description = excluded.description, original_amount = excluded.original_amount,
+  currency = excluded.currency, ars_amount = excluded.ars_amount,
+  category = excluded.category, subcategory = excluded.subcategory,
+  payment_method = excluded.payment_method, refund_ars = excluded.refund_ars,
+  notes = excluded.notes, source = excluded.source;`
+        // Default: un CSV más nuevo agrega lo que falta y no toca lo que ya está.
+        // Sin esto, cada reimport borraría las correcciones hechas desde la app.
+        : `on conflict (id) do nothing;`,
       '',
     )
   }

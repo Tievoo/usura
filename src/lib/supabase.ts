@@ -27,6 +27,7 @@ export interface TransactionRow {
   user_id: string
   type: string
   date: string
+  time: string | null
   description: string
   original_amount: string
   currency: string

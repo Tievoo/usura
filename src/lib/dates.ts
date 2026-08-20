@@ -22,6 +22,12 @@ export function parseDate(f: DateStr): Date {
   return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1)
 }
 
+/** 'HH:MM' local, para sellar la hora de un gasto que se carga ahora. */
+export function nowTime(): string {
+  const d = new Date()
+  return `${p2(d.getHours())}:${p2(d.getMinutes())}`
+}
+
 /** '2026-07' — la clave de mes que usa toda la app. */
 export type MonthStr = string
 export const monthOf = (f: DateStr): MonthStr => f.slice(0, 7)

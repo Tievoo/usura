@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { MonthHeader } from '../components/MonthHeader'
 import { TransactionList } from '../components/TransactionList'
-import { NewExpense } from '../components/NewExpense'
+import { ExpenseSheet } from '../components/ExpenseSheet'
+import { TransactionDetail } from '../components/TransactionDetail'
 import { deleteTransaction, saveTransaction, transactionsOfMonth } from '../lib/db'
 import { currentMonth, prevMonth, nextMonth, monthName, monthOf, type MonthStr } from '../lib/dates'
 import { net, type PaymentMethod, type Transaction } from '../lib/types'
@@ -16,7 +17,11 @@ interface Props {
 
 export function Transactions({ userId, status }: Props) {
   const [month, setMonth] = useState<MonthStr>(currentMonth())
-  const [open, setOpen] = useState(false)
+  const [sheet, setSheet] = useState(false)
+  /** El movimiento que estás mirando en el detalle. */
+  const [detail, setDetail] = useState<Transaction | null>(null)
+  /** El que se está editando en la hoja. null = alta nueva. */
+  const [editing, setEditing] = useState<Transaction | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
   const ofMonth = useLiveQuery(() => transactionsOfMonth(month), [month], [] as Transaction[])
@@ -46,18 +51,29 @@ export function Transactions({ userId, status }: Props) {
   async function handleSave(t: Transaction) {
     // Local primero: la UI no espera a la red. Si no hay señal, sube después.
     await saveTransaction(t)
-    setOpen(false)
+    setSheet(false)
+    setEditing(null)
     setMonth(monthOf(t.date))
     setToast(status.online ? 'Guardado' : 'Guardado. Sube cuando vuelva la señal.')
     void sync()
   }
 
-  async function handleTap(t: Transaction) {
-    // La edición completa llega con la ficha de movimiento; por ahora, borrar.
-    if (!window.confirm(`¿Borrar «${t.description || t.category}»?`)) return
+  async function handleArchive(t: Transaction) {
     await deleteTransaction(t.id)
-    setToast('Borrado')
+    setDetail(null)
+    setToast('Archivado')
     void sync()
+  }
+
+  function handleEdit(t: Transaction) {
+    setDetail(null)
+    setEditing(t)
+    setSheet(true)
+  }
+
+  function nuevo() {
+    setEditing(null)
+    setSheet(true)
   }
 
   return (
@@ -86,18 +102,26 @@ export function Transactions({ userId, status }: Props) {
 
       <TransactionList
         transactions={ofMonth}
-        onTap={handleTap}
+        onTap={setDetail}
         emptyMonth={monthName(month)}
-        onAdd={() => setOpen(true)}
+        onAdd={nuevo}
       />
 
-      <button type="button" className="fab" onClick={() => setOpen(true)} aria-label="Cargar gasto">+</button>
+      <button type="button" className="fab" onClick={nuevo} aria-label="Cargar gasto">+</button>
 
-      <NewExpense
-        open={open}
+      <TransactionDetail
+        transaction={detail}
+        onClose={() => setDetail(null)}
+        onEdit={handleEdit}
+        onArchive={(t) => void handleArchive(t)}
+      />
+
+      <ExpenseSheet
+        open={sheet}
         userId={userId}
         last={last}
-        onClose={() => setOpen(false)}
+        editing={editing}
+        onClose={() => { setSheet(false); setEditing(null) }}
         onSave={(t) => void handleSave(t)}
       />
 

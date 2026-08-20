@@ -22,6 +22,8 @@ export interface Transaction {
   userId: string
   type: TransactionType
   date: DateStr
+  /** Hora local 'HH:MM'. null cuando no se sabe: la UI lo dice, no la inventa. */
+  time: string | null
   description: string
 
   /** Tal como se pagó, en centavos. */

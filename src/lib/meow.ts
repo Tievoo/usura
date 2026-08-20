@@ -94,6 +94,13 @@ export function parseFecha(raw: string): DateStr | null {
   return `${m[3]}-${p2(mes)}-${p2(Number(m[2]))}`
 }
 
+/** 'ago 01 2026 20:54' -> '20:54'. null si el export no trae hora. */
+export function parseHora(raw: string): string | null {
+  const m = raw.trim().match(/(\d{1,2}):(\d{2})/)
+  if (!m) return null
+  return `${p2(Number(m[1]))}:${m[2]}`
+}
+
 /** '-11846' -> 1184600 · '+104397.11' -> 10439711. Siempre el valor absoluto, en centavos. */
 export function parseMonto(raw: string): Cents {
   const n = Number.parseFloat(raw.replace(/[+\s]/g, ''))
@@ -149,13 +156,20 @@ function subTransporte(c: string): string {
   return 'apps'
 }
 
-/** §5.4 — Apuestas. Ojo: algunos patrones se van a Entretenimiento, no son apuesta. */
-function claseApuestas(c: string): Clasificacion {
-  if (has(c, 'playland|bowling|pool|golf|rematch|repo')) return cat('entretenimiento', 'salidas')
+/**
+ * §5.4 — la categoría `Juego` de Meow mezclaba dos cosas distintas: timba y
+ * videojuegos. Por eso el fallback es un parámetro y no una constante: un `Juego`
+ * que no matchea ningún patrón de apuesta es un videojuego —así lo dice la data,
+ * 16 de 17 casos— mientras que un `Timba` que no matchea sigue siendo timba.
+ */
+function claseApuestas(c: string, fallback: Clasificacion): Clasificacion {
+  // Salidas físicas: se juega, pero no se apuesta.
+  if (has(c, 'playland|bowling|bolos|pool|golf|rematch|repo')) return cat('entretenimiento', 'salidas')
   if (has(c, 'poker|pokerstars')) return cat('apuestas', 'poker')
   if (has(c, 'stake|sinoca|casino|online')) return cat('apuestas', 'casino')
-  if (has(c, 'timba|timbita|timbini|rula|chirolera')) return cat('apuestas', 'timba')
-  return cat('apuestas', null)
+  // 'timbee' y 'timbita' no contienen 'timba': hay que listar las variantes.
+  if (has(c, 'timba|timbit|timbin|timbe|rula|chirolera')) return cat('apuestas', 'timba')
+  return fallback
 }
 
 /** §5.5 — Tecnología por comentario. */
@@ -232,8 +246,9 @@ function claseGasto(categoria: string, c: string): Clasificacion {
     case 'verduras': return cat('super', 'verduleria')
 
     case 'juego':
+      return claseApuestas(c, cat('entretenimiento', 'videojuegos'))
     case 'timba':
-      return claseApuestas(c)
+      return claseApuestas(c, cat('apuestas', 'timba'))
 
     case 'cine': return cat('entretenimiento', 'cine')
 
@@ -428,6 +443,7 @@ export async function importarMeow(
       userId,
       type,
       date,
+      time: parseHora(r.fecha),
       description: comentario,
       originalAmount: amount,
       currency: 'ARS',
