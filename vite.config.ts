@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.svg'],
+      includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'Usura',
         short_name: 'Usura',
@@ -19,13 +19,19 @@ export default defineConfig({
         // Carbón cálido: la barra del sistema tiene que ser del mismo material que la app.
         background_color: '#141210',
         theme_color: '#141210',
+        // Chrome en Android pide un PNG de 192 y otro de 512 para ofrecer instalar
+        // la app; con SVG solo no siempre aparece el prompt. Se generan con
+        // scripts/make-icons.ts desde el mismo dibujo que icon.svg.
         icons: [
-          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml' },
         ],
       },
       workbox: {
         // La app entera se cachea: tiene que abrir sin señal.
-        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         // Nunca cachear la API: los datos los sirve Dexie, no el service worker.
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
