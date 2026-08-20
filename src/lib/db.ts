@@ -1,6 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { FxRate, Transaction } from './types'
-import { monthRange, type MonthStr } from './dates'
+import { monthRange, type DateStr, type MonthStr } from './dates'
 
 /**
  * IndexedDB es la fuente de verdad de la UI. Supabase es una réplica a la que
@@ -46,6 +46,12 @@ export async function transactionsOfMonth(month: MonthStr): Promise<Transaction[
   return rows
     .filter((t) => !t.deletedAt)
     .sort((a, b) => (a.date === b.date ? b.createdAt.localeCompare(a.createdAt) : b.date.localeCompare(a.date)))
+}
+
+/** Rango arbitrario de fechas, sin borradas. Lo usa Análisis. */
+export async function transactionsBetween(from: DateStr, to: DateStr): Promise<Transaction[]> {
+  const rows = await db.transactions.where('date').between(from, to, true, true).toArray()
+  return rows.filter((t) => !t.deletedAt)
 }
 
 /** Alta local. Marca sucio para que la cola lo suba cuando pueda. */

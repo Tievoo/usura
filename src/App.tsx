@@ -9,6 +9,7 @@ import { Login } from './components/Login'
 import { TabBar, type Tab } from './components/TabBar'
 import { Transactions } from './screens/Transactions'
 import { ComingSoon } from './screens/ComingSoon'
+import { Analytics } from './screens/Analytics'
 
 /** El orden de las pestañas, que es el que recorre el swipe. */
 const ORDEN: Tab[] = ['transactions', 'analytics', 'recurring', 'debts']
@@ -102,15 +103,7 @@ export function App() {
   // la pantalla que entra tiene que existir antes de entrar.
   const paneles: { id: Tab; contenido: React.ReactNode }[] = [
     { id: 'transactions', contenido: <Transactions userId={session.user.id} status={status} /> },
-    {
-      id: 'analytics',
-      contenido: (
-        <ComingSoon
-          title="Análisis"
-          text="El gasto por categoría, por mes y por año llega en una próxima iteración. Todo lo que cargues ya queda listo para aparecer acá."
-        />
-      ),
-    },
+    { id: 'analytics', contenido: <Analytics /> },
     {
       id: 'recurring',
       contenido: (
@@ -133,7 +126,7 @@ export function App() {
 
   return (
     <div className="app" onTouchStart={alTocar} onTouchEnd={alSoltar}>
-      <div className="track" style={{ transform: `translateX(${indice * -100}%)` }}>
+      <div className="panes" style={{ transform: `translateX(${indice * -100}%)` }}>
         {paneles.map((p) => (
           <section key={p.id} className="pane" aria-hidden={p.id !== tab}>
             {p.contenido}

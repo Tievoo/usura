@@ -298,7 +298,7 @@ button { font-family: inherit; color: inherit; }
  * scrollee: sin eso, un hijo flex se niega a encogerse por debajo de su contenido
  * y el scroll se va al contenedor equivocado.
  */
-.track {
+.panes {
   flex: 1; min-height: 0;
   display: flex;
   transition: transform var(--dur-sheet) var(--ease);
@@ -311,5 +311,82 @@ button { font-family: inherit; color: inherit; }
 
 /* Respetar a quien pidió menos movimiento en el sistema. */
 @media (prefers-reduced-motion: reduce) {
-  .track { transition: none; }
+  .panes { transition: none; }
 }
+
+/* ---------- Análisis ---------- */
+/*
+ * El desglose es una lista rankeada, no una torta. La paleta de categorías tiene
+ * pares que no se distinguen bien entre sí, así que el color nunca es el canal de
+ * identidad: cada fila lleva su nombre y la barra solo refuerza la magnitud.
+ */
+
+/* `.mo button` fuerza 28px cuadrados; el segmentado necesita su ancho. */
+.mo .an-seg { margin-bottom: 6px; }
+.mo .an-seg button { width: auto; height: 28px; padding: 0 11px; border: 0; background: none; }
+.mo .an-seg button[aria-pressed='true'] { background: var(--amber); color: var(--amber-ink); }
+
+.an-sec { padding: 14px var(--pad-screen) 6px; }
+.an-sec > .u-micro { display: block; margin-bottom: 10px; }
+.an-vacio { margin: 0; font-size: var(--t-body-s); color: var(--text-3); }
+
+/* ---- tendencia: una sola serie, un solo color ---- */
+.an-trend { display: flex; align-items: flex-end; gap: 2px; height: 92px; }
+.an-bar {
+  flex: 1; min-width: 0; height: 100%; padding: 0; cursor: pointer;
+  background: none; border: 0;
+  display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; gap: 5px;
+}
+/* Extremo del dato redondeado y anclado a la base; el resto es superficie. */
+.an-bar i {
+  display: block; background: var(--rule-strong);
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+  transition: background var(--dur-fast) var(--ease);
+}
+.an-bar em {
+  font-style: normal; font-size: 9px; color: var(--text-3);
+  text-transform: uppercase; letter-spacing: var(--tr-micro);
+}
+.an-bar.on i { background: var(--amber); }
+.an-bar.on em { color: var(--text-2); }
+.an-bar:hover i { background: var(--text-3); }
+.an-bar.on:hover i { background: var(--amber-hover); }
+
+/* ---- lista rankeada ---- */
+.an-lista { display: flex; flex-direction: column; }
+.an-fila {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 3px 10px;
+  grid-template-areas: 'nm v pct' 'track track track';
+  width: 100%; min-height: var(--touch-min); align-items: baseline;
+  padding: 9px 0; cursor: pointer;
+  background: none; border: 0; border-top: 1px solid var(--rule);
+  text-align: left;
+}
+.an-lista .an-fila:first-child { border-top: 0; }
+.an-nm { grid-area: nm; font-size: var(--t-body-s); color: var(--text); }
+.an-v {
+  grid-area: v; font-family: var(--font-figure); font-size: var(--t-figure-s);
+  font-variant-numeric: tabular-nums; color: var(--text);
+}
+.an-pct {
+  grid-area: pct; min-width: 30px; text-align: right;
+  font-family: var(--font-figure); font-size: var(--t-figure-s);
+  font-variant-numeric: tabular-nums; color: var(--text-3);
+}
+.an-track { grid-area: track; height: 3px; background: var(--surface-2); border-radius: var(--r-xs); overflow: hidden; }
+.an-track i { display: block; height: 100%; border-radius: var(--r-xs); }
+
+.an-subs { padding: 2px 0 8px 0; }
+.an-sub {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 10px;
+  padding: 5px 0 5px 12px; border-left: 1px solid var(--rule);
+}
+.an-sub .an-nm { font-size: var(--t-body-s); color: var(--text-2); }
+.an-sub .an-v, .an-sub .an-pct { color: var(--text-2); }
+
+.an-ingreso { margin: 0; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.an-ingreso .cifra {
+  font-family: var(--font-figure); font-size: var(--t-figure);
+  font-variant-numeric: tabular-nums; color: var(--positive);
+}
+.an-ingreso em { font-style: normal; font-size: var(--t-body-s); color: var(--text-3); }

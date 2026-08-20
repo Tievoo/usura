@@ -68,7 +68,14 @@ Estado: iteración 1 andando en producción (2026-08-20). Histórico de Meow mig
 
 **Iteración 4 — Análisis**
 - Navegación por meses y años, gasto por categoría y subcategoría, comparativas.
-- Acá entran USD constante e IPC.
+- Acá entran USD constante e IPC. *(Pendientes: falta el backfill de cotizaciones
+  históricas de la iteración 2 y una serie de IPC.)*
+- **Nada de torta ni de barra apilada.** La paleta de categorías tiene pares que no
+  se distinguen —`impuestos` con `hogar` a ΔE 7,7 con visión normal, `bebidas` con
+  `super` a ΔE 2,8 en deuteranopía— y en esas formas el color es la única pista de
+  quién es quién. El desglose va como lista rankeada con el nombre en cada fila y
+  la barra reforzando la magnitud. Los colores de categoría no se retocan: son del
+  design system.
 
 **Iteración 5 — Deudas**
 - Ledger propio: quién me debe, a quién le debo, saldos por persona.
