@@ -257,6 +257,11 @@ function claseGasto(categoria: string, c: string): Clasificacion {
       if (has(c, 'gym|gimnasio')) return cat('deporte', 'gym')
       return cat('deporte', 'otros-deportes')
 
+    // Categoría nueva en el export de agosto 2026. Antes el gym venía dentro de
+    // `Varios` y lo resolvía la regla por comentario.
+    case 'gym':
+      return cat('deporte', 'gym')
+
     case 'medico': return cat('salud', 'medico')
     case 'tecnologia': return cat('tecnologia', subTecnologia(c))
 
