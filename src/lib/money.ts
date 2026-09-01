@@ -29,11 +29,21 @@ export function formatUsd(c: Cents): string {
   return 'US$ ' + format(c)
 }
 
-/** Lo que tipeás en el teclado del alta: dígitos crudos -> centavos. */
+/** Lo que tipeás en el teclado del alta: dígitos crudos (con coma opcional) -> centavos. */
 export function fromKeypad(digits: string): Cents {
   if (!digits) return 0
-  const n = Number.parseInt(digits, 10)
-  return Number.isFinite(n) ? n * 100 : 0
+  const [pesos, centavos = ''] = digits.split(',')
+  const n = Number.parseInt(pesos || '0', 10)
+  const c = Number.parseInt((centavos + '00').slice(0, 2), 10)
+  return Number.isFinite(n) ? n * 100 + c : 0
+}
+
+/** Centavos -> dígitos crudos para sembrar el teclado en edición. Inverso de fromKeypad. */
+export function toKeypad(c: Cents): string {
+  const abs = Math.abs(c)
+  const pesos = Math.floor(abs / 100)
+  const centavos = abs % 100
+  return centavos === 0 ? String(pesos) : `${pesos},${String(centavos).padStart(2, '0')}`
 }
 
 /** numeric(14,2) de Postgres -> centavos. */

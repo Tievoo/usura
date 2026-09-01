@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { toArs, fromKeypad, format } from '../lib/money'
+import { toArs, fromKeypad, toKeypad, format } from '../lib/money'
 import { today, nowTime } from '../lib/dates'
 import { resolveRate, DEFAULT_FX_TYPE, type ResolvedRate } from '../lib/fx'
 import { CATEGORY_BY_SLUG, EXPENSE_CATEGORIES, TOP_EXPENSE, categoryColor } from '../data/categories'
@@ -54,7 +54,7 @@ export function ExpenseSheet({ open, userId, last, editing, onClose, onSave }: P
     if (!open) return
     if (editing) {
       // En edición el monto arranca en el valor real, centavos incluidos.
-      setDigits(String(Math.round(editing.originalAmount / 100)))
+      setDigits(toKeypad(editing.originalAmount))
       setCurrency(editing.currency)
       setDescription(editing.description)
       setCategory(editing.category)
@@ -97,8 +97,14 @@ export function ExpenseSheet({ open, userId, last, editing, onClose, onSave }: P
     if (amountLocked) return
     setAmountTouched(true)
     if (k === 'del') return setDigits((d) => d.slice(0, -1))
-    if (k === '000') return setDigits((d) => (d ? (d + '000').slice(0, 9) : d))
-    setDigits((d) => (d + k).replace(/^0+/, '').slice(0, 9))
+    if (k === ',') return setDigits((d) => (d.includes(',') ? d : (d || '0') + ','))
+    setDigits((d) => {
+      const [pesos, centavos] = d.split(',')
+      // Con coma puesta, sólo entran los dos dígitos de centavos (nada de "000" acá).
+      if (centavos !== undefined) return k === '000' || centavos.length >= 2 ? d : `${pesos},${centavos}${k}`
+      if (k === '000') return d ? (d + '000').slice(0, 9) : d
+      return (d + k).replace(/^0+/, '').slice(0, 9)
+    })
   }
 
   function save() {
@@ -283,6 +289,7 @@ export function ExpenseSheet({ open, userId, last, editing, onClose, onSave }: P
           <button type="button" className="fn" onClick={() => tap('000')}>000</button>
           <button type="button" onClick={() => tap('0')}>0</button>
           <button type="button" className="fn" onClick={onClose}>Cerrar</button>
+          <button type="button" onClick={() => tap(',')}>,</button>
         </div>
       </section>
     </>
