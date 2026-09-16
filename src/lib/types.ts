@@ -8,6 +8,10 @@ export type PaymentMethod = 'mercadopago' | 'cash' | 'credit'
 export type FxType = 'official' | 'blue' | 'mep' | 'crypto' | 'manual'
 export type Source = 'manual' | 'recurring' | 'meow_import' | 'splitwise'
 
+/** Una suscripción sigue hasta que la cortás; una serie de cuotas tiene fin conocido. */
+export type RecurringType = 'subscription' | 'installments'
+export type Frequency = 'monthly' | 'yearly'
+
 export const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
   { value: 'mercadopago', label: 'Mercado Pago' },
   { value: 'cash', label: 'Efectivo' },
@@ -47,12 +51,32 @@ export interface Transaction {
   notes: string | null
   source: Source
 
+  /** De qué serie viene, si viene de una. */
+  recurringRuleId: string | null
+  /** Período que cubre: 'YYYY-MM' mensual y cuotas, 'YYYY' anual. */
+  recurringPeriod: string | null
+  installmentNo: number | null
+  installmentTotal: number | null
+
   createdAt: string
   updatedAt: string
   deletedAt: string | null
 
   /** Solo local: 1 = todavía no subió. Dexie no indexa booleanos. */
   _dirty: 0 | 1
+}
+
+/** De dónde salió el movimiento, dicho para una persona. */
+export function sourceLabel(t: Transaction): string {
+  switch (t.source) {
+    case 'meow_import': return 'Importado de Meow'
+    case 'splitwise': return 'Importado de Splitwise'
+    case 'recurring':
+      return t.installmentNo !== null && t.installmentTotal !== null
+        ? `Generado por una serie · cuota ${t.installmentNo} de ${t.installmentTotal}`
+        : 'Generado por una serie'
+    default: return 'Cargado a mano'
+  }
 }
 
 /** Lo que realmente salió de tu bolsillo. */
@@ -77,3 +101,46 @@ export interface SyncStatus {
   syncing: boolean
   lastError: string | null
 }
+
+/**
+ * Una serie: la suscripción de Crunchyroll o las 12 cuotas de la notebook.
+ *
+ * No es dueña de sus instancias. Cada movimiento que genera es un movimiento
+ * común: se edita y se archiva solo, y editar la serie no reescribe el pasado.
+ */
+export interface RecurringRule {
+  id: string
+  userId: string
+  type: RecurringType
+  description: string
+
+  /** Lo que se paga **cada vez**. El total de una serie de cuotas se calcula. */
+  amount: Cents
+  currency: Currency
+
+  category: string
+  subcategory: string | null
+  paymentMethod: PaymentMethod
+
+  frequency: Frequency
+  /** Se recorta al último día si el mes es más corto: el 31 cae 28 en febrero. */
+  dayOfMonth: number
+
+  startDate: DateStr
+  /** null = sigue hasta que la cortes. En una suscripción es lo normal. */
+  endDate: DateStr | null
+  /** Solo en cuotas. Es lo que le da fin conocido a la serie. */
+  installmentsTotal: number | null
+
+  active: boolean
+  notes: string | null
+
+  createdAt: string
+  updatedAt: string
+  deletedAt: string | null
+
+  _dirty: 0 | 1
+}
+
+export const recurringTypeLabel = (r: RecurringRule): string =>
+  r.type === 'installments' ? 'Cuotas' : r.frequency === 'yearly' ? 'Anual' : 'Mensual'

@@ -1,7 +1,11 @@
-import { supabase, type TransactionRow } from './supabase'
+import type { EntityTable, Table } from 'dexie'
+import { supabase, type RecurringRuleRow, type TransactionRow } from './supabase'
 import { db, writeMeta, readMeta } from './db'
 import { toNumeric, fromNumeric } from './money'
-import type { FxType, PaymentMethod, Currency, Transaction, Source, TransactionType } from './types'
+import type {
+  Currency, Frequency, FxType, PaymentMethod, RecurringRule, RecurringType,
+  Source, Transaction, TransactionType,
+} from './types'
 
 /**
  * Sincronización. Local siempre primero: la UI escribe en Dexie y sigue, y esto
@@ -12,12 +16,114 @@ import type { FxType, PaymentMethod, Currency, Transaction, Source, TransactionT
  * de la misma persona.
  */
 
-const LAST_PULL_KEY = 'lastPull'
+/* ---------- la forma que tiene que tener una tabla para sincronizarse ---------- */
+
+interface Syncable {
+  id: string
+  updatedAt: string
+  _dirty: 0 | 1
+}
+
+interface RemoteRow {
+  id: string
+  updated_at: string
+}
+
+/**
+ * Una tabla ya lista para sincronizar, con los tipos borrados en el borde. Adentro
+ * de `define` todo está tipado; afuera alcanza con que las dos sepan subir y bajar,
+ * y así la lista de tablas es una lista y no un `switch` que crece con el modelo.
+ */
+interface SyncedTable {
+  remote: string
+  push(): Promise<void>
+  pull(): Promise<void>
+}
+
+// En tandas: una lista de 1.152 transacciones importadas no entra en un solo request.
+const BATCH = 200
+/** Techo por corrida. Si hay más cambios, el cursor queda guardado y siguen en la próxima. */
+const PAGE = 1000
+
+function define<L extends Syncable, R extends RemoteRow>(cfg: {
+  remote: string
+  table: () => EntityTable<L, 'id'>
+  toRow: (l: L) => R
+  fromRow: (r: R) => L
+  /** Clave vieja de la época de una sola tabla, para no re-bajar todo una vez. */
+  legacyPullKey?: string
+}): SyncedTable {
+  const pullKey = `lastPull:${cfg.remote}`
+  // `EntityTable` es la vista linda para quien declara la tabla; acá adentro
+  // alcanza con la genérica, que sí sabe que la clave es un string.
+  const table = () => cfg.table() as unknown as Table<L, string>
+
+  return {
+    remote: cfg.remote,
+
+    async push() {
+      const dirty = await table().where('_dirty').equals(1).toArray()
+      if (!dirty.length) return
+
+      for (let i = 0; i < dirty.length; i += BATCH) {
+        const batch = dirty.slice(i, i + BATCH)
+        const { error } = await supabase.from(cfg.remote).upsert(batch.map(cfg.toRow), { onConflict: 'id' })
+        if (error) throw new Error(error.message)
+
+        // Solo se limpia lo que efectivamente subió; si algo se editó mientras
+        // viajaba, su updatedAt cambió y vuelve a marcarse sucio en el próximo put.
+        await db.transaction('rw', table(), async () => {
+          for (const row of batch) {
+            const current = await table().get(row.id)
+            if (current && current.updatedAt === row.updatedAt) {
+              await table().put({ ...current, _dirty: 0 as const })
+            }
+          }
+        })
+      }
+    },
+
+    async pull() {
+      const from =
+        (await readMeta(pullKey)) ??
+        (cfg.legacyPullKey ? await readMeta(cfg.legacyPullKey) : null) ??
+        '1970-01-01T00:00:00Z'
+
+      const { data, error } = await supabase
+        .from(cfg.remote)
+        .select('*')
+        .gt('updated_at', from)
+        .order('updated_at', { ascending: true })
+        .limit(PAGE)
+
+      if (error) throw new Error(error.message)
+      if (!data?.length) return
+
+      const remote = (data as R[]).map(cfg.fromRow)
+
+      await db.transaction('rw', table(), async () => {
+        for (const r of remote) {
+          const local = await table().get(r.id)
+          // El local sucio y más nuevo gana: todavía no subió y no queremos pisarlo.
+          if (local?._dirty === 1 && local.updatedAt >= r.updatedAt) continue
+          await table().put(r)
+        }
+      })
+
+      const last = remote[remote.length - 1]
+      if (last) await writeMeta(pullKey, last.updatedAt)
+    },
+  }
+}
 
 /* ---------- mapeo ---------- */
 
-function toRow(t: Transaction): TransactionRow {
-  return {
+const transactions = define<Transaction, TransactionRow>({
+  remote: 'transactions',
+  table: () => db.transactions,
+  legacyPullKey: 'lastPull',
+
+  toRow: (t) => ({
     id: t.id,
     user_id: t.userId,
     type: t.type,
@@ -36,14 +142,16 @@ function toRow(t: Transaction): TransactionRow {
     refund_ars: toNumeric(t.refundArs),
     notes: t.notes,
     source: t.source,
+    recurring_rule_id: t.recurringRuleId,
+    recurring_period: t.recurringPeriod,
+    installment_no: t.installmentNo,
+    installment_total: t.installmentTotal,
     created_at: t.createdAt,
     updated_at: t.updatedAt,
     deleted_at: t.deletedAt,
-  }
-}
+  }),
 
-function fromRow(r: TransactionRow): Transaction {
-  return {
+  fromRow: (r) => ({
     id: r.id,
     userId: r.user_id,
     type: r.type as TransactionType,
@@ -63,67 +171,73 @@ function fromRow(r: TransactionRow): Transaction {
     refundArs: fromNumeric(r.refund_ars),
     notes: r.notes,
     source: r.source as Source,
+    // Las columnas nacieron en la iteración 3: una fila vieja las trae ausentes.
+    recurringRuleId: r.recurring_rule_id ?? null,
+    recurringPeriod: r.recurring_period ?? null,
+    installmentNo: r.installment_no ?? null,
+    installmentTotal: r.installment_total ?? null,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
     deletedAt: r.deleted_at,
     _dirty: 0,
-  }
-}
+  }),
+})
 
-/* ---------- push ---------- */
+const recurringRules = define<RecurringRule, RecurringRuleRow>({
+  remote: 'recurring_rules',
+  table: () => db.recurringRules,
 
-async function push(): Promise<void> {
-  const dirty = await db.transactions.where('_dirty').equals(1).toArray()
-  if (!dirty.length) return
+  toRow: (r) => ({
+    id: r.id,
+    user_id: r.userId,
+    type: r.type,
+    description: r.description,
+    amount: toNumeric(r.amount),
+    currency: r.currency,
+    category: r.category,
+    subcategory: r.subcategory,
+    payment_method: r.paymentMethod,
+    frequency: r.frequency,
+    day_of_month: r.dayOfMonth,
+    start_date: r.startDate,
+    end_date: r.endDate,
+    installments_total: r.installmentsTotal,
+    active: r.active,
+    notes: r.notes,
+    created_at: r.createdAt,
+    updated_at: r.updatedAt,
+    deleted_at: r.deletedAt,
+  }),
 
-  // En tandas: una lista de 1.152 transacciones importadas no entra en un solo request.
-  const BATCH = 200
-  for (let i = 0; i < dirty.length; i += BATCH) {
-    const batch = dirty.slice(i, i + BATCH)
-    const { error } = await supabase.from('transactions').upsert(batch.map(toRow), { onConflict: 'id' })
-    if (error) throw new Error(error.message)
-    // Solo se limpia lo que efectivamente subió; si algo se editó mientras
-    // viajaba, su updatedAt cambió y vuelve a marcarse sucio en el próximo put.
-    await db.transaction('rw', db.transactions, async () => {
-      for (const t of batch) {
-        const current = await db.transactions.get(t.id)
-        if (current && current.updatedAt === t.updatedAt) {
-          await db.transactions.update(t.id, { _dirty: 0 })
-        }
-      }
-    })
-  }
-}
+  fromRow: (r) => ({
+    id: r.id,
+    userId: r.user_id,
+    type: r.type as RecurringType,
+    description: r.description,
+    amount: fromNumeric(r.amount),
+    currency: r.currency as Currency,
+    category: r.category,
+    subcategory: r.subcategory,
+    paymentMethod: r.payment_method as PaymentMethod,
+    frequency: r.frequency as Frequency,
+    dayOfMonth: r.day_of_month,
+    startDate: r.start_date,
+    endDate: r.end_date,
+    installmentsTotal: r.installments_total,
+    active: r.active,
+    notes: r.notes,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+    deletedAt: r.deleted_at,
+    _dirty: 0,
+  }),
+})
 
-/* ---------- pull ---------- */
-
-async function pull(): Promise<void> {
-  const from = (await readMeta(LAST_PULL_KEY)) ?? '1970-01-01T00:00:00Z'
-
-  const { data, error } = await supabase
-    .from('transactions')
-    .select('*')
-    .gt('updated_at', from)
-    .order('updated_at', { ascending: true })
-    .limit(1000)
-
-  if (error) throw new Error(error.message)
-  if (!data?.length) return
-
-  const remote = (data as TransactionRow[]).map(fromRow)
-
-  await db.transaction('rw', db.transactions, async () => {
-    for (const r of remote) {
-      const local = await db.transactions.get(r.id)
-      // El local sucio y más nuevo gana: todavía no subió y no queremos pisarlo.
-      if (local?._dirty === 1 && local.updatedAt >= r.updatedAt) continue
-      await db.transactions.put(r)
-    }
-  })
-
-  const last = remote[remote.length - 1]
-  if (last) await writeMeta(LAST_PULL_KEY, last.updatedAt)
-}
+/**
+ * Las series van primero: un movimiento generado apunta a su regla con una FK, y
+ * subir la instancia antes que la serie que la explica es un error de la base.
+ */
+const TABLES: SyncedTable[] = [recurringRules, transactions]
 
 /* ---------- orquestación ---------- */
 
@@ -148,8 +262,8 @@ export async function sync(): Promise<void> {
   running = true
   notify(true, null)
   try {
-    await push()
-    await pull()
+    for (const t of TABLES) await t.push()
+    for (const t of TABLES) await t.pull()
     notify(false, null)
   } catch (e) {
     // Un fallo de sync no es un error del usuario: se reintenta y se avisa sin drama.

@@ -41,6 +41,33 @@ export interface TransactionRow {
   refund_ars: string
   notes: string | null
   source: string
+  recurring_rule_id: string | null
+  recurring_period: string | null
+  installment_no: number | null
+  installment_total: number | null
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
+/** Igual que arriba: snake_case y numeric como string. */
+export interface RecurringRuleRow {
+  id: string
+  user_id: string
+  type: string
+  description: string
+  amount: string
+  currency: string
+  category: string
+  subcategory: string | null
+  payment_method: string
+  frequency: string
+  day_of_month: number
+  start_date: string
+  end_date: string | null
+  installments_total: number | null
+  active: boolean
+  notes: string | null
   created_at: string
   updated_at: string
   deleted_at: string | null

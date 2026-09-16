@@ -5,6 +5,7 @@ import { resolveRate, DEFAULT_FX_TYPE, type ResolvedRate } from '../lib/fx'
 import { CATEGORY_BY_SLUG, EXPENSE_CATEGORIES, TOP_EXPENSE, categoryColor } from '../data/categories'
 import { PAYMENT_METHODS, type PaymentMethod, type Currency, type Transaction } from '../lib/types'
 import { useCloseOnBack } from '../lib/back'
+import { usePhysicalKeypad } from '../lib/keypad'
 
 interface Props {
   open: boolean
@@ -152,12 +153,19 @@ export function ExpenseSheet({ open, userId, last, editing, onClose, onSave }: P
       refundArs: 0,
       notes: null,
       source: 'manual',
+      // Un gasto cargado a mano no viene de ninguna serie.
+      recurringRuleId: null,
+      recurringPeriod: null,
+      installmentNo: null,
+      installmentTotal: null,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
       _dirty: 1,
     })
   }
+
+  usePhysicalKeypad(open, { tap, save, close: onClose })
 
   return (
     <>

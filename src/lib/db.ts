@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { FxRate, Transaction } from './types'
+import type { FxRate, RecurringRule, Transaction } from './types'
 import { monthRange, type DateStr, type MonthStr } from './dates'
 
 /**
@@ -14,6 +14,7 @@ interface Meta {
 
 const db = new Dexie('usura') as Dexie & {
   transactions: EntityTable<Transaction, 'id'>
+  recurringRules: EntityTable<RecurringRule, 'id'>
   fxRates: EntityTable<FxRate, 'date'>
   meta: EntityTable<Meta, 'key'>
 }
@@ -23,6 +24,13 @@ db.version(1).stores({
   transactions: 'id, date, updatedAt, _dirty, category, [date+id]',
   fxRates: 'date',
   meta: 'key',
+})
+
+// v2 — recurrentes. `recurringRuleId` indexado porque la pantalla de series
+// pregunta «qué generó esta regla» una vez por regla.
+db.version(2).stores({
+  transactions: 'id, date, updatedAt, _dirty, category, [date+id], recurringRuleId',
+  recurringRules: 'id, updatedAt, _dirty, active',
 })
 
 export { db }
@@ -65,7 +73,46 @@ export async function deleteTransaction(id: string): Promise<void> {
   await db.transactions.update(id, { deletedAt: now, updatedAt: now, _dirty: 1 })
 }
 
-export const countPending = (): Promise<number> => db.transactions.where('_dirty').equals(1).count()
+/** Lo que todavía no subió, de todas las tablas: es el indicador de la UI. */
+export async function countPending(): Promise<number> {
+  const [t, r] = await Promise.all([
+    db.transactions.where('_dirty').equals(1).count(),
+    db.recurringRules.where('_dirty').equals(1).count(),
+  ])
+  return t + r
+}
+
+/* ---------- recurrentes ---------- */
+
+/** Todas las series vivas, las activas primero y dentro de eso por descripción. */
+export async function recurringRules(): Promise<RecurringRule[]> {
+  const rows = await db.recurringRules.toArray()
+  return rows
+    .filter((r) => !r.deletedAt)
+    .sort((a, b) =>
+      a.active === b.active
+        ? a.description.localeCompare(b.description, 'es-AR')
+        : Number(b.active) - Number(a.active),
+    )
+}
+
+export async function saveRule(r: RecurringRule): Promise<void> {
+  await db.recurringRules.put({ ...r, _dirty: 1 })
+}
+
+export async function deleteRule(id: string): Promise<void> {
+  const now = new Date().toISOString()
+  await db.recurringRules.update(id, { deletedAt: now, updatedAt: now, _dirty: 1 })
+}
+
+/**
+ * Lo que generó una serie, **incluidas las archivadas**. Es a propósito: si
+ * borraste la instancia de marzo, no queremos volver a crearla en la próxima
+ * corrida. El archivado es una decisión, no un hueco.
+ */
+export function instancesOfRule(ruleId: string): Promise<Transaction[]> {
+  return db.transactions.where('recurringRuleId').equals(ruleId).toArray()
+}
 
 /* ---------- cotizaciones ---------- */
 
@@ -82,6 +129,6 @@ export async function latestRate(): Promise<FxRate | undefined> {
 
 /** Se llama al cerrar sesión: la base local es de un solo usuario a la vez. */
 export async function clearAll(): Promise<void> {
-  await Promise.all([db.transactions.clear(), db.meta.clear()])
+  await Promise.all([db.transactions.clear(), db.recurringRules.clear(), db.meta.clear()])
   // Las cotizaciones no se borran: son dato del mundo, no de la persona.
 }

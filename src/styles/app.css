@@ -453,3 +453,50 @@ button { font-family: inherit; color: inherit; }
   font-variant-numeric: tabular-nums; color: var(--text);
 }
 .dr-v em { display: block; font-style: normal; font-size: 9.5px; color: var(--text-3); margin-top: 2px; }
+
+/* ---------- recurrentes ---------- */
+/*
+ * La pestaña de series. El total de arriba es un pronóstico, no una cuenta: lo que
+ * ya se cobró suma por lo que salió y lo que falta por lo que dice la serie, así
+ * que mientras haya algo pendiente el número lleva el punteado de «estimado».
+ */
+.hd-total .amt.u-estimado { border-bottom-color: var(--rule-strong); padding-bottom: 2px; }
+
+/* Un vencimiento que todavía no ocurrió no es un gasto: no se pinta de ámbar. */
+.mv-v.u-estimado { color: var(--estimado); }
+
+/* Etiqueta de la fila de movimiento recurrente. Del design system, tal cual. */
+.chip-rec {
+  font: 8.5px/1.5 var(--font-ui); letter-spacing: .08em; text-transform: uppercase;
+  color: var(--positive); border: 1px solid var(--rule-strong); border-radius: var(--r-xs);
+  padding: 0 4px; white-space: nowrap;
+}
+
+/* Una serie pausada sigue en la lista: se apaga, no se esconde. */
+.mv.pausada { opacity: .55; }
+
+/* Lo que se viene no se toca todavía: la fila se lee, no se abre. */
+.mv.estatica { cursor: default; }
+
+.mo .chip { margin-left: auto; }
+
+/* Contador de cuotas. Con − y + en vez de un input: el teclado del sistema tapa
+   media hoja y esconde justo lo que estás decidiendo. */
+.paso {
+  display: inline-flex; align-items: center; gap: 2px; flex: none;
+  background: var(--surface-2); border: 1px solid var(--rule-strong);
+  border-radius: var(--r-sm); padding: 2px;
+}
+.paso button {
+  width: 32px; height: 30px; border: 0; background: none; cursor: pointer;
+  color: var(--text-2); font-size: 16px; border-radius: var(--r-xs);
+}
+.paso button:active { background: var(--amber-soft); }
+.paso b {
+  min-width: 30px; text-align: center; color: var(--text);
+  font-family: var(--font-figure); font-size: var(--t-figure);
+  font-variant-numeric: tabular-nums; font-weight: var(--w-regular);
+}
+
+.nota { margin: 0; padding: 0 var(--pad-screen) 10px; font-size: 10.5px; line-height: 1.5; color: var(--text-3); }
+.sec .nota { padding: 0; margin: 8px 0 0; }

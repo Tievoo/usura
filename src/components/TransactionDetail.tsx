@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { format, formatUsd } from '../lib/money'
 import { parseDate } from '../lib/dates'
-import { net, paymentMethodLabel, type Transaction } from '../lib/types'
+import { net, paymentMethodLabel, sourceLabel, type Transaction } from '../lib/types'
 import { categoryName, subcategoryName, categoryColor } from '../data/categories'
 import { useCloseOnBack } from '../lib/back'
 
@@ -104,7 +104,7 @@ export function TransactionDetail({ transaction, onClose, onEdit, onArchive }: P
               {t.source !== 'manual' && (
                 <div>
                   <dt>Origen</dt>
-                  <dd>{t.source === 'meow_import' ? 'Importado de Meow' : t.source}</dd>
+                  <dd>{sourceLabel(t)}</dd>
                 </div>
               )}
               {t._dirty === 1 && (

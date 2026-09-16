@@ -48,14 +48,22 @@ export function TransactionList({ transactions, onTap, emptyMonth, onAdd }: Prop
 
 function Row({ t, onTap }: { t: Transaction; onTap: (t: Transaction) => void }) {
   const sub = subcategoryName(t.category, t.subcategory)
-  const meta = [categoryName(t.category), sub, paymentMethodLabel(t.paymentMethod)].filter(Boolean).join(' · ')
+  // La cuota va en la meta y no en el nombre: «4 de 12» dice dónde estás parado
+  // en la serie, que es lo mismo que dice la categoría sobre el gasto.
+  const cuota = t.installmentNo !== null && t.installmentTotal !== null
+    ? `${t.installmentNo} de ${t.installmentTotal}`
+    : null
+  const meta = [categoryName(t.category), sub, cuota, paymentMethodLabel(t.paymentMethod)].filter(Boolean).join(' · ')
   const isUsd = t.currency === 'USD'
   const unconverted = isUsd && t.fxRate === null
 
   return (
     <button type="button" className="mv" onClick={() => onTap(t)}>
       <span className="mv-body">
-        <span className="mv-nm">{t.description || categoryName(t.category)}</span>
+        <span className="mv-nm">
+          {t.description || categoryName(t.category)}
+          {t.recurringRuleId !== null && <> <span className="chip-rec">Recurrente</span></>}
+        </span>
         <span className="mv-sub">{meta}</span>
       </span>
 

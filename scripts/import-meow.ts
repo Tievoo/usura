@@ -163,7 +163,7 @@ CSV: ${CSV}
   sin categorizar     ${s.sinCategorizar}   (${((s.sinCategorizar / Math.max(1, s.importadas)) * 100).toFixed(1)}%)
   con reembolso       ${s.conReembolso}
   con etiquetas       ${s.conEtiquetas}   (van a notes: falta la tabla de tags)
-  cuotas detectadas   ${s.cuotasDetectadas}   (no se arma la serie: falta la tabla de recurrentes)
+  cuotas detectadas   ${s.cuotasDetectadas}   (informativo: el patrón tambien matchea fechas, no se escribe)
   rango               ${s.rango?.desde} → ${s.rango?.hasta}
 `)
 

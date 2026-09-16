@@ -25,6 +25,13 @@ export function parseDate(f: DateStr): Date {
 /** El día del mes de una fecha: '2026-08-20' -> 20. */
 export const dayOf = (f: DateStr): number => Number(f.slice(8, 10))
 
+/** Corre una fecha n días, en hora local. Los meses y los años los ajusta Date. */
+export function addDays(f: DateStr, n: number): DateStr {
+  const d = parseDate(f)
+  d.setDate(d.getDate() + n)
+  return toDateStr(d)
+}
+
 /** 'HH:MM' local, para sellar la hora de un gasto que se carga ahora. */
 export function nowTime(): string {
   const d = new Date()
@@ -46,6 +53,12 @@ export function prevMonth(m: MonthStr): MonthStr {
   const [y, mm] = m.split('-').map(Number)
   const d = new Date(y ?? 1970, (mm ?? 1) - 1 - 1, 1)
   return `${d.getFullYear()}-${p2(d.getMonth() + 1)}`
+}
+
+/** Cuántos días tiene el mes. '2026-02' -> 28. */
+export function daysInMonth(m: MonthStr): number {
+  const [y, mm] = m.split('-').map(Number)
+  return new Date(y ?? 1970, mm ?? 1, 0).getDate()
 }
 
 /** Rango [desde, hasta] inclusive de un mes, para consultar por índice. */

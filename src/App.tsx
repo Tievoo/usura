@@ -10,6 +10,8 @@ import { TabBar, type Tab } from './components/TabBar'
 import { Transactions } from './screens/Transactions'
 import { ComingSoon } from './screens/ComingSoon'
 import { Analytics } from './screens/Analytics'
+import { Recurring } from './screens/Recurring'
+import { generateDue } from './lib/recurring'
 
 /** El orden de las pestañas, que es el que recorre el swipe. */
 const ORDEN: Tab[] = ['transactions', 'analytics', 'recurring', 'debts']
@@ -77,8 +79,15 @@ export function App() {
   useEffect(() => {
     if (!session) return
     preload()
+    // Las instancias vencidas se crean al abrir, sin esperar a la red, y otra vez
+    // después de cada sync: una serie cargada en el celular tiene que generar acá
+    // en cuanto baja, no recién mañana.
+    void generateDue()
     const stop = startSync()
-    const off = onSync(({ error }) => setSyncError(error))
+    const off = onSync(({ syncing, error }) => {
+      setSyncError(error)
+      if (!syncing && !error) void generateDue()
+    })
     return () => { stop(); off() }
   }, [session])
 
@@ -105,15 +114,7 @@ export function App() {
   const paneles: { id: Tab; contenido: React.ReactNode }[] = [
     { id: 'transactions', contenido: <Transactions userId={session.user.id} status={status} /> },
     { id: 'analytics', contenido: <Analytics /> },
-    {
-      id: 'recurring',
-      contenido: (
-        <ComingSoon
-          title="Recurrentes"
-          text="Suscripciones y cuotas, generándose solas en su fecha. Todavía no está."
-        />
-      ),
-    },
+    { id: 'recurring', contenido: <Recurring userId={session.user.id} /> },
     {
       id: 'debts',
       contenido: (

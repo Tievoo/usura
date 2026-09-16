@@ -342,7 +342,7 @@ function etiquetas(categoria: string, comentario: string): string[] {
 
 const RE_CUOTA = /\bcuot[ao]?\s*(\d{1,2})\b|\b(\d{1,2})\s*\/\s*(\d{1,2})\b/
 
-/** Detecta la cuota declarada en el comentario. No se persiste todavía: falta la tabla. */
+/** Detecta la cuota declarada en el comentario. No se persiste: el patrón `3/12` también matchea una fecha. */
 export function detectarCuota(comentario: string): { nro: number; total: number | null } | null {
   const m = norm(comentario).match(RE_CUOTA)
   if (!m) return null
@@ -483,6 +483,13 @@ export async function importarMeow(
       // para no perderlas; cuando exista `tags`, se migran con un update y se limpian.
       notes: tags.length ? tags.map((t) => `#${t}`).join(' ') : null,
       source: 'meow_import',
+      // El histórico de Meow no trae series: cada fila es un gasto suelto. Las
+      // cuotas que `detectarCuota` encuentra en el comentario se cuentan pero no
+      // se escriben, porque el patrón `3/12` también matchea una fecha.
+      recurringRuleId: null,
+      recurringPeriod: null,
+      installmentNo: null,
+      installmentTotal: null,
       createdAt: ahora,
       updatedAt: ahora,
       deletedAt: null,
