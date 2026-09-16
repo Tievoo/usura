@@ -59,4 +59,6 @@ Histórico de Meow migrado: **1.190 movimientos**, ene 2024 → ago 2026, 1,3% s
 
 Falta: etiquetas (hoy viajan en `notes`), gestión de categorías, y las pestañas Análisis, Recurrentes y Deudas, que muestran un estado vacío honesto. Ver `docs/ESPECIFICACION.md` §2.
 
+Cotización diaria: `.github/workflows/fx-rates.yml` corre `bun run fx:fetch`, que trae dolarapi y hace upsert en `fx_rates` con la secret key. Además de llenar el histórico, es lo que mantiene el proyecto despierto: **Supabase pausa los proyectos gratis tras 7 días con poca actividad de base y un `pg_cron` interno no cuenta**, el request tiene que entrar de afuera. Ver `README.md`.
+
 **Trampa conocida de Supabase**: el proveedor de email no se configura desde `config.toml` y un `config push` lo apaga. Si el login falla con «Email sign-ins are disabled», se prende a mano en el dashboard. Ver el comentario en `supabase/config.toml`.

@@ -1,0 +1,48 @@
+# Cotización del día a `fx_rates`, y de paso lo que mantiene despierto el
+# proyecto de Supabase: en el plan gratis se pausa después de 7 días con poca
+# actividad de base, y la actividad tiene que entrar de afuera por la API
+# (un `pg_cron` adentro del proyecto no cuenta).
+#
+# Dos advertencias sobre el scheduler de GitHub, que son la razón de que esto
+# corra dos veces por día y no dos veces por semana:
+#
+# - Las corridas programadas se atrasan cuando hay pico de carga, y a veces se
+#   saltean sin aviso.
+# - GitHub deshabilita los workflows programados de un repo que pasa 60 días
+#   sin commits. Avisa por mail antes; si llega ese mail, se reactiva a mano
+#   desde la pestaña Actions.
+
+name: Cotización
+
+on:
+  schedule:
+    # 09:17 y 18:47 de Buenos Aires. La segunda es después del cierre, así que
+    # es la que queda escrita para el día.
+    - cron: '17 12 * * *'
+    - cron: '47 21 * * *'
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          # Misma versión que en netlify.toml y que en la máquina.
+          bun-version: 1.3.14
+
+      # `--production` saltea las devDependencies: el script solo necesita
+      # supabase-js, y el CLI de Supabase se baja un binario por plataforma
+      # que acá sería medio minuto y un punto de falla de más.
+      - run: bun install --frozen-lockfile --production
+
+      - run: bun run fx:fetch
+        env:
+          # La fecha del registro sale de la hora local del proceso y el runner
+          # corre en UTC: sin esto, la corrida de la noche entraría con la fecha
+          # del día siguiente.
+          TZ: America/Argentina/Buenos_Aires
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}

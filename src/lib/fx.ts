@@ -1,5 +1,6 @@
 import { latestRate, localRate, saveRate } from './db'
-import { fromNumeric, type Cents } from './money'
+import { fetchDolarApi } from './dolarapi'
+import type { Cents } from './money'
 import { today, type DateStr } from './dates'
 import type { FxRate, FxType } from './types'
 
@@ -11,15 +12,6 @@ import type { FxRate, FxType } from './types'
  * 2. Una API caída no bloquea el alta. Si no hay cotización, se usa la última
  *    conocida y se devuelve `estimated: true` para que la UI lo diga.
  */
-
-const API = 'https://dolarapi.com/v1/dolares'
-
-interface DolarApiRow {
-  casa: string
-  compra: number | null
-  venta: number | null
-  fechaActualizacion: string
-}
 
 export interface ResolvedRate {
   value: Cents
@@ -43,30 +35,11 @@ function rateFor(r: FxRate, type: FxType): Cents {
 
 async function fetchFromApi(): Promise<FxRate | null> {
   try {
-    const res = await fetch(API, { signal: AbortSignal.timeout(6000) })
-    if (!res.ok) return null
-    const data = (await res.json()) as DolarApiRow[]
-    // 'casa' y sus valores son de la API, no nuestros: se dejan como vienen.
-    const casa = (n: string) => data.find((d) => d.casa === n)
-
-    const official = casa('oficial')
-    if (!official?.venta) return null
-
-    const rate: FxRate = {
-      // La fecha es la del día en que rige, no la de actualización del feed.
-      date: today(),
-      officialBuy: fromNumeric(official.compra ?? official.venta),
-      officialSell: fromNumeric(official.venta),
-      blue: casa('blue')?.venta ? fromNumeric(casa('blue')!.venta) : null,
-      // dolarapi llama 'bolsa' al MEP.
-      mep: casa('bolsa')?.venta ? fromNumeric(casa('bolsa')!.venta) : null,
-      crypto: casa('cripto')?.venta ? fromNumeric(casa('cripto')!.venta) : null,
-      provider: 'dolarapi.com',
-      fetchedAt: new Date().toISOString(),
-    }
+    const rate = await fetchDolarApi()
     await saveRate(rate)
     return rate
   } catch {
+    // Una API caída no bloquea nada: quien llama se arregla con la última conocida.
     return null
   }
 }

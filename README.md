@@ -69,6 +69,34 @@ usuarios pidiendo magic links, el login empieza a fallar en silencio.
 
 Antes del primer deploy, el checklist de `docs/ESPECIFICACION.md` §8.
 
+## Cotización diaria y proyecto despierto
+
+`.github/workflows/fx-rates.yml` corre `bun run fx:fetch` dos veces por día:
+trae el dólar de dolarapi.com y lo escribe en `fx_rates` con la secret key, que
+es la única que puede escribir esa tabla.
+
+El segundo motivo es tan importante como el primero: **Supabase pausa los
+proyectos del plan gratis después de 7 días con poca actividad de base**, y la
+actividad tiene que entrar de afuera por la API. Un `pg_cron` adentro del propio
+proyecto no alcanza. Este job es el latido, y como escribe algo que sirve, no es
+un ping al pedo.
+
+Necesita dos secrets en el repo (Settings → Secrets → Actions), o por consola:
+
+```bash
+gh secret set SUPABASE_URL          # https://<ref>.supabase.co
+gh secret set SUPABASE_SECRET_KEY   # sb_secret_... — nunca en el bundle ni en un VITE_*
+```
+
+Dos cosas del scheduler de GitHub que conviene saber: las corridas programadas
+se atrasan o se saltean cuando hay pico de carga —por eso van dos por día y no
+dos por semana—, y **los workflows programados se deshabilitan solos si el repo
+pasa 60 días sin commits**. Avisa por mail; se reactivan a mano desde Actions.
+
+Si algo falla, el job sale con error y GitHub manda el mail. A propósito: acá no
+rige «una API caída no bloquea nada», que es una regla de la UI. Un latido que
+falla en silencio se descubre con el proyecto ya pausado.
+
 ## Importar el histórico de Meow
 
 Es una migración de una sola vez y **no tiene botón en la app**: se corre a mano.
