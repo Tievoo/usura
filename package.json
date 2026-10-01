@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "import:meow": "bun run scripts/import-meow.ts",
+    "import:list": "bun run scripts/import-list.ts",
     "fx:fetch": "bun run scripts/fetch-fx.ts"
   },
   "dependencies": {
