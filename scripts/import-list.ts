@@ -73,7 +73,7 @@ const tmp = 'scripts/.out/.query.sql'
  */
 async function query<T>(sql: string): Promise<T[]> {
   await Bun.write(tmp, sql)
-  const out = await sh(['bun', 'x', 'supabase', 'db', 'query', '--linked', '-f', tmp])
+  const out = await sh(['bun', 'x', 'supabase', 'db', 'query', '--linked', '--read-only', '-f', tmp])
   return (JSON.parse(out.slice(out.indexOf('{'))) as { rows: T[] }).rows
 }
 
@@ -311,7 +311,7 @@ if (!APLICAR) {
 }
 
 console.log('\nAplicando…')
-await sh(['bun', 'x', 'supabase', 'db', 'query', '--linked', '-f', SALIDA])
+await sh(['bun', 'x', 'supabase', 'db', 'query', '--linked', '--yes', '-f', SALIDA])
 const despues = await query<{ n: number }>(
   `select count(*)::int as n from public.transactions
     where id in (${items.map((t) => q(t.id)).join(', ')});`)

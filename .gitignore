@@ -13,3 +13,9 @@ dev-dist/
 
 # Salida del importador (SQL generado, puede tener datos)
 scripts/.out/
+
+# Notas personales para cargar listas a mano
+donde-fui.txt
+mercadopago.txt
+*_Tievoli.pdf
+Screenshot_*_Brubank.jpg
