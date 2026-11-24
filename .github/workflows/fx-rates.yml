@@ -8,9 +8,10 @@
 #
 # - Las corridas programadas se atrasan cuando hay pico de carga, y a veces se
 #   saltean sin aviso.
-# - GitHub deshabilita los workflows programados de un repo que pasa 60 días
-#   sin commits. Avisa por mail antes; si llega ese mail, se reactiva a mano
-#   desde la pestaña Actions.
+# - GitHub deshabilita los workflows programados de un repo público que pasa
+#   60 días sin actividad. El job `keepalive` de abajo hace un commit vacío
+#   cuando el último tiene 50 días o más. Si igual llega el mail de aviso, se
+#   reactiva a mano desde la pestaña Actions.
 
 name: Cotización
 
@@ -46,3 +47,24 @@ jobs:
           TZ: America/Argentina/Buenos_Aires
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+
+  # Que el repo no pase 60 días quieto, porque GitHub apagaría este workflow y
+  # con él la cotización y el despertador de Supabase. `[skip netlify]` evita
+  # que el commit vacío dispare un deploy.
+  keepalive:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Commit vacío si el último tiene 50 días o más
+        run: |
+          dias=$(( ($(date +%s) - $(git log -1 --format=%ct)) / 86400 ))
+          echo "Último commit hace $dias días"
+          if [ "$dias" -ge 50 ]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit --allow-empty -m 'Mantener activos los workflows programados [skip netlify]'
+            git push
+          fi
